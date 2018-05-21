@@ -119,7 +119,8 @@ def main():
         Dcost = []
 
         iters = c.epoch_iters / c.batch_size
-        for it, samples in enumerate(tqdm(c.data_iter(), total=iters)):
+        for it, samples in enumerate(tqdm(c.data_iter(), total=iters,
+                                          file=sys.stdout)):
             if it >= iters:
                 break
             tot_iter += 1

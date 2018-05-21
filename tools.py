@@ -11,13 +11,6 @@ def create_dir(folder):
 
 
 class TimePrint(object):
-    '''
-    Simple convenience class to print who long it takes between successive calls to its __init__ function.
-    Usage example:
-        TimePrint("some text")          -- simply prints "some text"
-        <do some stuff here>
-        TimePrint("some other text ")   -- prints "some other text (took ?s)", where ? is the time passed since TimePrint("some text") was called
-    '''
     t_last = None
 
     def __init__(self, text):

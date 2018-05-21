@@ -5,28 +5,26 @@ from psgan import PSGAN
 from data_io import save_tensor
 
 
-def sample_noise_tensor(config, batch_size, zx, zx_quilt=None):
+def sample_noise_tensor(config, batch_size, zx, zx_qlt=None):
     Z = np.zeros((batch_size, config.nz, zx, zx))
-    Z[:,
-    config.nz_global:config.nz_global + config.nz_local] = np.random.uniform(
-        -1., 1., (batch_size, config.nz_local, zx, zx))
+    Z[:, config.nz_global:config.nz_global+config.nz_local] = \
+        np.random.uniform(-1., 1., (batch_size, config.nz_local, zx, zx))
 
-    if zx_quilt is None:
-        Z[:, :config.nz_global] = np.random.uniform(-1., 1., (
-        batch_size, config.nz_global, 1, 1))
+    if zx_qlt is None:
+        Z[:, :config.nz_global] = \
+            np.random.uniform(-1., 1., (batch_size, config.nz_global, 1, 1))
     else:
-        for i in range(zx / zx_quilt):
-            for j in range(zx / zx_quilt):
-                Z[:, :config.nz_global, i * zx_quilt:(i + 1) * zx_quilt,
-                j * zx_quilt:(j + 1) * zx_quilt] = np.random.uniform(-1., 1., (
-                batch_size, config.nz_global, 1, 1))
+        Z_g = Z[:, :config.nz_global]
+        for i in range(zx / zx_qlt):
+            for j in range(zx / zx_qlt):
+                Z_g[:, :, i*zx_qlt:(i+1)*zx_qlt, j*zx_qlt:(j+1)*zx_qlt] = \
+                    np.random.uniform(-1., 1.,
+                                      (batch_size, config.nz_global, 1, 1))
 
     if config.nz_periodic > 0:
         for i, pixel in zip(range(1, config.nz_periodic + 1),
                             np.linspace(30, 130, config.nz_periodic)):
-            band = np.pi * (0.5 * i / float(
-                config.nz_periodic) + 0.5)  ##initial values for numerical stability
-            ##just horizontal and vertical coordinate indices
+            band = np.pi * (0.5 * i / float(config.nz_periodic) + 0.5)
             for h in range(zx):
                 Z[:, -i * 2, :, h] = h * band
             for w in range(zx):
@@ -50,7 +48,6 @@ if __name__ == "__main__":
         Dcost = []
 
         iters = c.epoch_iters / c.batch_size
-        iters = 1
         for it, samples in enumerate(tqdm(c.data_iter(), total=iters)):
             if it >= iters:
                 break

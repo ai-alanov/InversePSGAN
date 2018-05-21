@@ -38,6 +38,12 @@ def sample_noise_tensor(config, batch_size, zx, zx_qlt=None):
                 Z[:, -i * 2 + 1, w] = w * band
     return Z
 
+
+def makedirs(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
 def create_logging_file(log_dir, options):
     log_dir = os.path.join(log_dir, datetime.now().strftime("%Y-%m-%d"))
     n_files = len(glob.glob(os.path.join(log_dir, '*')))

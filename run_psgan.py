@@ -54,6 +54,7 @@ def create_logging_file(log_dir, options):
         with open(os.path.join(log_dir, 'id_to_options.csv'), 'a') as f:
             w = csv.DictWriter(f, ['id'] + sorted(options.keys()),
                                delimiter='\t')
+            w.writeheader()
             options['id'] = file_id
             w.writerow(options)
     else:

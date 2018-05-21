@@ -135,7 +135,7 @@ def main():
     epoch = 0
     tot_iter = 0
 
-    samples_folder = log_file[:6] + '_samples'
+    samples_folder = log_file[:-len('%H:%M:%S.txt')] + 'samples'
     makedirs(samples_folder)
     model_folder = create_model_folder('models', vars(options))
 

@@ -71,7 +71,7 @@ def create_model_folder(model_dir, options):
     model_dir = os.path.join(model_dir, datetime.now().strftime("%Y-%m-%d"))
     n_folders = len(glob.glob(os.path.join(model_dir, '*')))
     folder_id = '{:06d}'.format(n_folders if n_folders else 1)
-    model_folder = folder_id + datetime.now().strftime("_%H:%M:%S") + '.txt'
+    model_folder = folder_id + datetime.now().strftime("_%H:%M:%S")
     model_folder = os.path.join(model_dir, model_folder)
     if os.path.exists(model_dir):
         with open(os.path.join(model_dir, 'id_to_options.csv'), 'a') as f:
@@ -87,6 +87,7 @@ def create_model_folder(model_dir, options):
             w.writeheader()
             options['id'] = folder_id
             w.writerow(options)
+    makedirs(model_folder)
     return model_folder
 
 

@@ -1,5 +1,12 @@
 import numpy as np
 from tqdm import tqdm
+import logging
+from optparse import OptionParser
+import os
+import sys
+import glob
+from datetime import datetime
+import csv
 
 from psgan import PSGAN
 from data_io import save_tensor
@@ -31,8 +38,66 @@ def sample_noise_tensor(config, batch_size, zx, zx_qlt=None):
                 Z[:, -i * 2 + 1, w] = w * band
     return Z
 
+def create_logging_file(log_dir, options):
+    log_dir = os.path.join(log_dir, datetime.now().strftime("%Y-%m-%d"))
+    n_files = len(glob.glob(os.path.join(log_dir, '*')))
+    file_id = '{:06d}'.format(n_files if n_files else 1)
+    log_file = file_id + datetime.now().strftime("_%H:%M:%S") + '.txt'
+    log_file = os.path.join(log_dir, log_file)
+    if os.path.exists(log_dir):
+        with open(os.path.join(log_dir, 'id_to_options.csv'), 'a') as f:
+            w = csv.DictWriter(f, ['id'] + sorted(options.keys()),
+                               delimiter='\t')
+            options['id'] = file_id
+            w.writerow(options)
+    else:
+        makedirs(log_dir)
+        with open(os.path.join(log_dir, 'id_to_options.csv'), 'w') as f:
+            w = csv.DictWriter(f, ['id'] + sorted(options.keys()),
+                               delimiter='\t')
+            w.writeheader()
+            options['id'] = file_id
+            w.writerow(options)
+    return log_file
 
-if __name__ == "__main__":
+
+def main():
+    parser = OptionParser(usage="usage: %prog [options]",
+                          version="%prog 1.0")
+    parser.add_option("--mode", type='string', default='train',
+                      help="train or sample")
+    parser.add_option("--checkpoint", type='string', default='last',
+                      help="load a model from checkpoint")
+    parser.add_option("--data", type='string', default='texture',
+                      help="path to data for training")
+    (options, args) = parser.parse_args()
+
+    log_file = create_logging_file('logs', vars(options).items())
+    logger = logging.getLogger('run_psgan')
+    logger.setLevel(logging.INFO)
+    file_handler = logging.FileHandler(log_file)
+    log_format = '%(levelname)s:%(asctime)s:%(name)s: %(message)s'
+    formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d:%H-%M-%S')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    class StreamToLogger(object):
+
+        def __init__(self, stderr, logger):
+            self.stderr = stderr
+            self.logger = logger
+
+        def write(self, buf):
+            self.stderr.write(buf)
+            for line in buf.rstrip().splitlines():
+                self.logger.error(line.rstrip())
+
+    stderr_logger = logging.getLogger('STDERR')
+    stderr_handler = logging.FileHandler(log_file)
+    stderr_handler.setFormatter(logging.Formatter('%(name)s: %(message)s'))
+    stderr_logger.addHandler(stderr_handler)
+    sys.stderr = StreamToLogger(sys.stderr, stderr_logger)
+
     psgan = PSGAN()
     c = psgan.config
     c.print_info()
@@ -42,7 +107,7 @@ if __name__ == "__main__":
 
     while epoch < c.epoch_count:
         epoch += 1
-        print("Epoch %d" % epoch)
+        logger.info("Epoch %d" % epoch)
 
         Gcost = []
         Dcost = []
@@ -61,15 +126,15 @@ if __name__ == "__main__":
             else:
                 cost = psgan.train_d(samples, Znp)
                 Dcost.append(cost)
-
-        print "Gcost=", np.mean(Gcost), "  Dcost=", np.mean(Dcost)
+        msg = "Gcost = {}, Dcost = {}"
+        logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 
         slist = []
         for img in samples:
             slist += [img]
         img = np.concatenate(slist, axis=2)
         save_tensor(img, 'samples/minibatchTrue_%s_epoch%d.jpg' % (
-        c.save_name, epoch))
+            c.save_name, epoch))
 
         samples = psgan.generate(Znp)
         slist = []
@@ -77,10 +142,14 @@ if __name__ == "__main__":
             slist += [img]
         img = np.concatenate(slist, axis=2)
         save_tensor(img, 'samples/minibatchGen_%s_epoch%d.jpg' % (
-        c.save_name, epoch))
+            c.save_name, epoch))
 
         data = psgan.generate(z_sample)
 
         save_tensor(data[0],
                     'samples/largesample%s_epoch%d.jpg' % (c.save_name, epoch))
         psgan.save('models/%s_epoch%d.psgan' % (c.save_name, epoch))
+
+
+if __name__ == '__main__':
+    main()

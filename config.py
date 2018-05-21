@@ -1,4 +1,5 @@
 import os
+import logging
 from tools import create_dir
 from data_io import get_texture_iter
 
@@ -19,7 +20,7 @@ class Config(object):
     lr = 0.0002
     b1 = 0.5 # momentum term of adam
     l2_fac = 1e-8 # L2 weight regularization factor
-    epoch_count = 100 # how many epochs to do globally
+    epoch_count = 10 # how many epochs to do globally
     k = 1 # number of D updates vs G updates
     batch_size = 25
     epoch_iters = batch_size * 1000 # steps inside one epoch
@@ -69,9 +70,13 @@ class Config(object):
                                 mirror=False, batch_size=self.batch_size)
 
     def print_info(self):
-        print "Learning and generating samples from zx ", self.zx, \
-            ", which yields images of size npx ", zx_to_npx(self.zx, self.gen_ls)
-        print "Producing samples from zx_sample ", self.zx_sample, \
-            ", which yields images of size npx ", zx_to_npx(self.zx_sample, self.gen_ls)
-        print "Saving samples and model data to file ",self.save_name
+        logger = logging.getLogger('run_psgan.config')
+        msg = "Learning and generating samples from zx {}, "
+        msg += "which yields images of size npx {}"
+        logger.info(msg.format(self.zx, zx_to_npx(self.zx, self.gen_ls)))
+        msg = "Producing samples from zx_sample {}, "
+        msg += "which yields images of size npx {}"
+        logger.info(msg.format(self.zx_sample, zx_to_npx(self.zx_sample, self.gen_ls)))
+        msg = "Saving samples and model data to file {}"
+        logger.info(msg.format(self.save_name))
 

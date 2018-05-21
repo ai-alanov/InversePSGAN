@@ -78,7 +78,7 @@ def main():
                       help="path to data for training")
     (options, args) = parser.parse_args()
 
-    log_file = create_logging_file('logs', vars(options).items())
+    log_file = create_logging_file('logs', vars(options))
     logger = logging.getLogger('run_psgan')
     logger.setLevel(logging.INFO)
     file_handler = logging.FileHandler(log_file)

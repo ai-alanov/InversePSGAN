@@ -1,10 +1,6 @@
 import os
 import logging
-from tools import create_dir
 from data_io import get_texture_iter
-
-create_dir('samples')
-create_dir('models')
 
 
 def zx_to_npx(zx, depth):

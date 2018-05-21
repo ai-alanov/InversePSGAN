@@ -135,7 +135,7 @@ def main():
     epoch = 0
     tot_iter = 0
 
-    samples_folder = log_file + '_samples'
+    samples_folder = log_file[:6] + '_samples'
     makedirs(samples_folder)
     model_folder = create_model_folder('models', vars(options))
 
@@ -164,12 +164,14 @@ def main():
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 
+        samples_epoch_folder = os.path.join(samples_folder, str(epoch))
+        makedirs(samples_epoch_folder)
         slist = []
         for img in samples:
             slist += [img]
         img = np.concatenate(slist, axis=2)
         real_imgs_file = 'real_{}_epoch{}.jpg'.format(c.save_name, epoch)
-        real_imgs_file = os.path.join(samples_folder, real_imgs_file)
+        real_imgs_file = os.path.join(samples_epoch_folder, real_imgs_file)
         save_tensor(img, real_imgs_file)
 
         samples = psgan.generate(Znp)
@@ -178,13 +180,13 @@ def main():
             slist += [img]
         img = np.concatenate(slist, axis=2)
         gen_imgs_file = 'gen_{}_epoch{}.jpg'.format(c.save_name, epoch)
-        gen_imgs_file = os.path.join(samples_folder, gen_imgs_file)
+        gen_imgs_file = os.path.join(samples_epoch_folder, gen_imgs_file)
         save_tensor(img, gen_imgs_file)
 
         data = psgan.generate(z_sample)
 
         large_img_file = 'large{}_epoch{}.jpg'.format(c.save_name, epoch)
-        large_img_file = os.path.join(samples_folder, large_img_file)
+        large_img_file = os.path.join(samples_epoch_folder, large_img_file)
         save_tensor(data[0], large_img_file)
         model_file = '{}_epoch{}.psgan'.format(c.save_name, epoch)
         psgan.save(os.path.join(model_folder, model_file))

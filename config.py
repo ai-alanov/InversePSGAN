@@ -23,7 +23,7 @@ class Config(object):
     epoch_count = 10 # how many epochs to do globally
     k = 1 # number of D updates vs G updates
     batch_size = 25
-    epoch_iters = batch_size * 1000 # steps inside one epoch
+    epoch_iters = batch_size * 100 # steps inside one epoch
 
     def __init__(self):
         self.nz_local = 30    

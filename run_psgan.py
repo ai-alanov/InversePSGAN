@@ -54,7 +54,6 @@ def create_logging_file(log_dir, options):
         with open(os.path.join(log_dir, 'id_to_options.csv'), 'a') as f:
             w = csv.DictWriter(f, ['id'] + sorted(options.keys()),
                                delimiter='\t')
-            w.writeheader()
             options['id'] = file_id
             w.writerow(options)
     else:
@@ -66,6 +65,29 @@ def create_logging_file(log_dir, options):
             options['id'] = file_id
             w.writerow(options)
     return log_file
+
+
+def create_model_folder(model_dir, options):
+    model_dir = os.path.join(model_dir, datetime.now().strftime("%Y-%m-%d"))
+    n_folders = len(glob.glob(os.path.join(model_dir, '*')))
+    folder_id = '{:06d}'.format(n_folders if n_folders else 1)
+    model_folder = folder_id + datetime.now().strftime("_%H:%M:%S") + '.txt'
+    model_folder = os.path.join(model_dir, model_folder)
+    if os.path.exists(model_dir):
+        with open(os.path.join(model_dir, 'id_to_options.csv'), 'a') as f:
+            w = csv.DictWriter(f, ['id'] + sorted(options.keys()),
+                               delimiter='\t')
+            options['id'] = folder_id
+            w.writerow(options)
+    else:
+        makedirs(model_dir)
+        with open(os.path.join(model_dir, 'id_to_options.csv'), 'w') as f:
+            w = csv.DictWriter(f, ['id'] + sorted(options.keys()),
+                               delimiter='\t')
+            w.writeheader()
+            options['id'] = folder_id
+            w.writerow(options)
+    return model_folder
 
 
 def main():
@@ -112,6 +134,10 @@ def main():
     epoch = 0
     tot_iter = 0
 
+    samples_folder = log_file + '_samples'
+    makedirs(samples_folder)
+    model_folder = create_model_folder('models', vars(options))
+
     while epoch < c.epoch_count:
         epoch += 1
         logger.info("Epoch %d" % epoch)
@@ -141,22 +167,26 @@ def main():
         for img in samples:
             slist += [img]
         img = np.concatenate(slist, axis=2)
-        save_tensor(img, 'samples/minibatchTrue_%s_epoch%d.jpg' % (
-            c.save_name, epoch))
+        real_imgs_file = 'real_{}_epoch{}.jpg'.format(c.save_name, epoch)
+        real_imgs_file = os.path.join(samples_folder, real_imgs_file)
+        save_tensor(img, real_imgs_file)
 
         samples = psgan.generate(Znp)
         slist = []
         for img in samples:
             slist += [img]
         img = np.concatenate(slist, axis=2)
-        save_tensor(img, 'samples/minibatchGen_%s_epoch%d.jpg' % (
-            c.save_name, epoch))
+        gen_imgs_file = 'gen_{}_epoch{}.jpg'.format(c.save_name, epoch)
+        gen_imgs_file = os.path.join(samples_folder, gen_imgs_file)
+        save_tensor(img, gen_imgs_file)
 
         data = psgan.generate(z_sample)
 
-        save_tensor(data[0],
-                    'samples/largesample%s_epoch%d.jpg' % (c.save_name, epoch))
-        psgan.save('models/%s_epoch%d.psgan' % (c.save_name, epoch))
+        large_img_file = 'large{}_epoch{}.jpg'.format(c.save_name, epoch)
+        large_img_file = os.path.join(samples_folder, large_img_file)
+        save_tensor(data[0], large_img_file)
+        model_file = '{}_epoch{}.psgan'.format(c.save_name, epoch)
+        psgan.save(os.path.join(model_folder, model_file))
 
 
 if __name__ == '__main__':

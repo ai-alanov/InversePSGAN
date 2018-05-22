@@ -55,7 +55,7 @@ def main():
             if it % (c.k + 1) == 0:
                 Gcost.append(psgan.train_g(Znp))
             else:
-                samples = c.data_iter(options.b_size)
+                samples = next(c.data_iter(options.b_size))
                 Dcost.append(psgan.train_d(samples, Znp))
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))

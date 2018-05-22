@@ -44,28 +44,19 @@ def main():
     utils.makedirs(samples_folder)
     model_folder = utils.create_model_folder('models', vars(options))
 
-    while epoch < options.n_epochs:
-        epoch += 1
-        logger.info("Epoch %d" % epoch)
-
+    for epoch in tqdm(range(options.n_epochs), file=sys.stdout):
+        logger.info("Epoch {}".format(epoch))
         Gcost = []
         Dcost = []
 
-        iters = options.n_iters
-        for it, samples in enumerate(tqdm(c.data_iter(options.b_size), total=iters,
-                                          file=sys.stdout)):
-            if it >= iters:
-                break
-            tot_iter += 1
-
+        for it in range(options.n_iters):
             Znp = utils.sample_noise_tensor(c, options.b_size, c.zx)
 
-            if tot_iter % (c.k + 1) == 0:
-                cost = psgan.train_g(Znp)
-                Gcost.append(cost)
+            if it % (c.k + 1) == 0:
+                Gcost.append(psgan.train_g(Znp))
             else:
-                cost = psgan.train_d(samples, Znp)
-                Dcost.append(cost)
+                samples = c.data_iter(options.b_size)
+                Dcost.append(psgan.train_d(samples, Znp))
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 

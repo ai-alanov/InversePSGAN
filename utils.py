@@ -104,7 +104,7 @@ def save_samples(save_dir, epoch, real_samples, gen_samples, large_sample):
     samples_name = ['real', 'gen', 'large']
     for name, sample in zip(samples_name, samples):
         sample_file = '{}_epoch_{}.jpg'.format(name, epoch)
-        sample_file = os.path.join((epoch_dir, sample_file))
+        sample_file = os.path.join(epoch_dir, sample_file)
         save_tensor(sample, sample_file)
 
 

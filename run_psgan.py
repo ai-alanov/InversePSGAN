@@ -33,6 +33,7 @@ def main():
     sys.stderr = utils.copy_stream_to_log(sys.stderr, 'STDERR', log_file)
 
     psgan = PSGAN()
+    c = psgan.config
     z_sample = utils.sample_noise_tensor(c, 1, c.zx_sample, c.zx_sample_quilt)
 
     samples_folder = os.path.join(os.path.dirname(log_file), 'samples')

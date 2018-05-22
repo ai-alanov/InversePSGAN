@@ -61,7 +61,7 @@ def main():
     tot_iter = 0
 
     samples_folder = os.path.join(os.path.dirname(log_file), 'samples')
-    makedirs(samples_folder)
+    utils.makedirs(samples_folder)
     model_folder = utils.create_model_folder('models', vars(options))
 
     while epoch < options.n_epochs:
@@ -91,7 +91,7 @@ def main():
 
         samples_epoch_folder = os.path.join(samples_folder,
                                             'epoch_{}'.format(epoch))
-        makedirs(samples_epoch_folder)
+        utils.makedirs(samples_epoch_folder)
         slist = []
         for img in samples:
             slist += [img]

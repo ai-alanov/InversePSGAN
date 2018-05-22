@@ -313,7 +313,7 @@ class PSGAN(object):
         stdout_handler = logging.StreamHandler(sys.stdout)
         stdout_handler.setLevel(logging.INFO)
         logger.addHandler(stdout_handler)
-        logger.info("Compiling the network...\n")
+        logger.info("Compiling the network...")
         self.train_d = theano.function(
             [X.input_var, Z.input_var], obj_d,
             updates=updates_d, allow_input_downcast=True)

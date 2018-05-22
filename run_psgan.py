@@ -48,8 +48,8 @@ def create_logging_file(log_dir, options):
     log_dir = os.path.join(log_dir, datetime.now().strftime("%Y-%m-%d"))
     n_files = len(glob.glob(os.path.join(log_dir, '*')))
     file_id = '{:06d}'.format(n_files if n_files else 1)
-    log_file = file_id + datetime.now().strftime("_%H:%M:%S") + '.txt'
-    log_file = os.path.join(log_dir, log_file)
+    log_file = file_id + datetime.now().strftime("_%H:%M:%S")
+    log_file = os.path.join(log_dir, log_file, 'log.txt')
     if os.path.exists(log_dir):
         with open(os.path.join(log_dir, 'id_to_options.csv'), 'a') as f:
             w = csv.DictWriter(f, ['id'] + sorted(options.keys()),
@@ -64,6 +64,7 @@ def create_logging_file(log_dir, options):
             w.writeheader()
             options['id'] = file_id
             w.writerow(options)
+    makedirs(os.path.dirname(log_file))
     return log_file
 
 
@@ -135,7 +136,7 @@ def main():
     epoch = 0
     tot_iter = 0
 
-    samples_folder = log_file[:-len('%H:%M:%S.txt')] + 'samples'
+    samples_folder = os.path.join(os.path.dirname(log_file), 'samples')
     makedirs(samples_folder)
     model_folder = create_model_folder('models', vars(options))
 

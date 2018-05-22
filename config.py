@@ -59,9 +59,9 @@ class Config(object):
            
     ## gives back the correct data iterator given class variables --
     ## this way we avoid the python restriction not to pickle iterator objects
-    def data_iter(self):
+    def data_iter(self, batch_size):
         return get_texture_iter(self.texture_dir, npx=self.npx,
-                                mirror=False, batch_size=self.batch_size)
+                                mirror=False, batch_size=batch_size)
 
     def print_info(self):
         logger = utils.create_logger('run_psgan.config')

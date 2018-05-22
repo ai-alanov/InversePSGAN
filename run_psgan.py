@@ -52,7 +52,7 @@ def main():
         Dcost = []
 
         iters = options.n_iters
-        for it, samples in enumerate(tqdm(c.data_iter(), total=iters,
+        for it, samples in enumerate(tqdm(c.data_iter(options.b_size), total=iters,
                                           file=sys.stdout)):
             if it >= iters:
                 break

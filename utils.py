@@ -74,6 +74,25 @@ def create_logger(name, file=None, stream=None, level=logging.INFO, need_fmt=Fal
     return logger
 
 
+def copy_stream_to_log(stream, stream_name, file):
+    class StreamToLogger(object):
+
+        def __init__(self, stream, logger):
+            self.stream = stream
+            self.logger = logger
+
+        def write(self, buffer):
+            self.stream.write(buffer)
+            for line in buffer.rstrip().splitlines():
+                self.logger.error(line.rstrip())
+
+    logger = logging.getLogger(stream_name)
+    handler = logger.FileHandler(file)
+    handler.setFormatter(logging.Formatter('%(name)s: %(message)s'))
+    logger.addHandler(handler)
+    return StreamToLogger(stream, logger)
+
+
 def sample_noise_tensor(config, batch_size, zx, zx_qlt=None):
     Z = np.zeros((batch_size, config.nz, zx, zx))
     Z[:, config.nz_global:config.nz_global+config.nz_local] = \

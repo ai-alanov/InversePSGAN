@@ -31,22 +31,7 @@ def main():
     logger = utils.create_logger('run_psgan', file=log_file, need_fmt=True)
     logger.setLevel(logging.INFO)
 
-    class StreamToLogger(object):
-
-        def __init__(self, stderr, logger):
-            self.stderr = stderr
-            self.logger = logger
-
-        def write(self, buf):
-            self.stderr.write(buf)
-            for line in buf.rstrip().splitlines():
-                self.logger.error(line.rstrip())
-
-    stderr_logger = logging.getLogger('STDERR')
-    stderr_handler = logging.FileHandler(log_file)
-    stderr_handler.setFormatter(logging.Formatter('%(name)s: %(message)s'))
-    stderr_logger.addHandler(stderr_handler)
-    sys.stderr = StreamToLogger(sys.stderr, stderr_logger)
+    sys.stderr = utils.copy_stream_to_log(sys.stderr, 'STDERR', log_file)
 
     psgan = PSGAN()
     c = psgan.config

@@ -11,6 +11,7 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
 import numpy as np
+import sys
 import logging
 from sklearn.externals import joblib
 
@@ -308,14 +309,18 @@ class PSGAN(object):
         updates_g = lasagne.updates.adam(obj_g, params_g,
                                          self.config.lr, self.config.b1)
 
-        TimePrint("Compiling the network...\n")
+        logger = logging.getLogger('run_psgan.psgan_build')
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setLevel(logging.INFO)
+        logger.addHandler(stdout_handler)
+        logger.info("Compiling the network...\n")
         self.train_d = theano.function(
             [X.input_var, Z.input_var], obj_d,
             updates=updates_d, allow_input_downcast=True)
-        TimePrint("Discriminator done.")
+        logger.info("Discriminator done.")
         self.train_g = theano.function(
             [Z.input_var], obj_g, updates=updates_g, allow_input_downcast=True)
-        TimePrint("Generator done.")
+        logger.info("Generator done.")
         self.generate = theano.function(
             [Z.input_var], prediction_gen, allow_input_downcast=True)
-        TimePrint("generate function done.")
+        logger.info("generate function done.")

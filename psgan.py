@@ -15,7 +15,7 @@ import logging
 from sklearn.externals import joblib
 
 from config import Config
-from tools import TimePrint
+from utils import TimePrint
 
 
 conv = lambda incoming, num_filters, filter_size, W, b, nonlinearity: \

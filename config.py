@@ -1,6 +1,7 @@
 import os
 import logging
 from data_io import get_texture_iter
+import utils
 
 
 def zx_to_npx(zx, depth):
@@ -66,7 +67,7 @@ class Config(object):
                                 mirror=False, batch_size=self.batch_size)
 
     def print_info(self):
-        logger = logging.getLogger('run_psgan.config')
+        logger = utils.create_logger('run_psgan.config')
         msg = "Learning and generating samples from zx {}, "
         msg += "which yields images of size npx {}"
         logger.info(msg.format(self.zx, zx_to_npx(self.zx, self.gen_ls)))

@@ -16,6 +16,7 @@ import logging
 from sklearn.externals import joblib
 
 from config import Config
+import utils
 
 
 conv = lambda incoming, num_filters, filter_size, W, b, nonlinearity: \
@@ -309,10 +310,7 @@ class PSGAN(object):
         updates_g = lasagne.updates.adam(obj_g, params_g,
                                          self.config.lr, self.config.b1)
 
-        logger = logging.getLogger('run_psgan.psgan_build')
-        stdout_handler = logging.FileHandler(sys.stdout)
-        stdout_handler.setLevel(logging.INFO)
-        logger.addHandler(stdout_handler)
+        logger = utils.create_logger('run_psgan.psgan_build', stream=sys.stdout)
         logger.info("Compiling the network...")
         self.train_d = theano.function(
             [X.input_var, Z.input_var], obj_d,

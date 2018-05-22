@@ -28,13 +28,7 @@ def main():
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
-    logger = logging.getLogger('run_psgan')
-    logger.setLevel(logging.INFO)
-    file_handler = logging.FileHandler(log_file)
-    log_format = '%(levelname)s:%(asctime)s:%(name)s: %(message)s'
-    formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d:%H-%M-%S')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    logger = utils.create_logger('run_psgan', file=log_file, need_fmt=True)
 
     class StreamToLogger(object):
 

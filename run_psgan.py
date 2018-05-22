@@ -105,7 +105,7 @@ def main():
                       help="how many epochs to do globally")
     parser.add_option("--n_iters", type='int', default=100,
                       help="steps inside one epoch")
-    parser.add_option("b_size", type='int', default=25,
+    parser.add_option("--b_size", type='int', default=25,
                       help="batch size")
     (options, args) = parser.parse_args()
 

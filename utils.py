@@ -87,7 +87,7 @@ def copy_stream_to_log(stream, stream_name, file):
                 self.logger.error(line.rstrip())
 
     logger = logging.getLogger(stream_name)
-    handler = logger.FileHandler(file)
+    handler = logging.FileHandler(file)
     handler.setFormatter(logging.Formatter('%(name)s: %(message)s'))
     logger.addHandler(handler)
     return StreamToLogger(stream, logger)

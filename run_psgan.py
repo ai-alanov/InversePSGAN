@@ -33,13 +33,12 @@ def main():
 
 
     checkpoint_path = utils.find_checkpoint('models', options.checkpoint)
-    print checkpoint_path
-    # psgan = PSGAN(checkpoint_path)
+    psgan = PSGAN(checkpoint_path)
 
-    # model_dir = utils.create_model_folder('models', vars(options))
-    # samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
-    #
-    # train(psgan, psgan.config, logger, options, model_dir, samples_dir)
+    model_dir = utils.create_model_folder('models', vars(options))
+    samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
+
+    train(psgan, psgan.config, logger, options, model_dir, samples_dir)
 
 
 if __name__ == '__main__':

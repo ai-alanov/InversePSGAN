@@ -71,8 +71,13 @@ def find_checkpoint(model_dir, checkpoint):
         model_folder = sorted(glob.glob(model_dir))[-2]
         print model_folder
         model_folder = os.path.join(model_folder, '*')
-        last_model_name = sorted(glob.glob(model_folder))[-1]
-        return last_model_name
+    else:
+        date, id = checkpoint.split('.')
+        id = '{:06d}'.format(id)
+        model_folder = os.path.join(model_dir, date, id)
+        model_folder = os.path.join(model_folder + '_*', '*')
+    last_model_name = sorted(glob.glob(model_folder))[-1]
+    return last_model_name
 
 
 def create_logger(name, file=None, stream=None, level=logging.INFO, need_fmt=False,

@@ -73,7 +73,7 @@ def find_checkpoint(model_dir, checkpoint):
         model_folder = os.path.join(model_folder, '*')
     else:
         date, id = checkpoint.split('.')
-        id = '{:06d}'.format(id)
+        id = '{:06d}'.format(int(id))
         model_folder = os.path.join(model_dir, date, id)
         model_folder = os.path.join(model_folder + '_*', '*')
     last_model_name = sorted(glob.glob(model_folder))[-1]

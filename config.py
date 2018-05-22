@@ -17,10 +17,7 @@ class Config(object):
     lr = 0.0002
     b1 = 0.5 # momentum term of adam
     l2_fac = 1e-8 # L2 weight regularization factor
-    epoch_count = 10 #
     k = 1 # number of D updates vs G updates
-    batch_size = 25
-    epoch_iters = batch_size * 100 # steps inside one epoch
 
     def __init__(self):
         self.nz_local = 30    

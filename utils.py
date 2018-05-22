@@ -61,6 +61,15 @@ def create_model_folder(model_dir, options):
     return model_folder
 
 
+def find_checkpoint(model_dir, checkpoint):
+    if not checkpoint:
+        return None
+    if checkpoint == 'last':
+        model_folder = sorted(glob.glob(sorted(glob.glob(model_dir))[-1]))[-2]
+        last_model_name = sorted(glob.glob(model_folder))[-1]
+        return last_model_name
+
+
 def create_logger(name, file=None, stream=None, level=logging.INFO, need_fmt=False,
                   fmt='%(levelname)s:%(asctime)s:%(name)s: %(message)s',
                   datefmt='%Y-%m-%d:%H-%M-%S'):

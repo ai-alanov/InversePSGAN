@@ -6,12 +6,11 @@ from tqdm import tqdm
 import utils
 
 
-def train(model, config, logger, options, samples_dir):
+def train(model, config, logger, options, model_dir, samples_dir):
     z_sample = utils.sample_noise_tensor(config, 1, config.zx_sample,
                                          config.zx_sample_quilt)
 
     utils.makedirs(samples_dir)
-    model_folder = utils.create_model_folder('models', vars(options))
 
     for epoch in tqdm(range(options.n_epochs), file=sys.stdout):
         logger.info("Epoch {}".format(epoch))
@@ -38,4 +37,4 @@ def train(model, config, logger, options, samples_dir):
                            gen_samples, large_sample)
 
         model_file = 'epoch_{}.model'.format(epoch)
-        model.save(os.path.join(model_folder, model_file))
+        model.save(os.path.join(model_dir, model_file))

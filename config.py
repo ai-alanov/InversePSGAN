@@ -62,15 +62,3 @@ class Config(object):
     def data_iter(self, batch_size):
         return get_texture_iter(self.texture_dir, npx=self.npx,
                                 mirror=False, batch_size=batch_size)
-
-    def print_info(self):
-        logger = utils.create_logger('run_psgan.config')
-        msg = "Learning and generating samples from zx {}, "
-        msg += "which yields images of size npx {}"
-        logger.info(msg.format(self.zx, zx_to_npx(self.zx, self.gen_ls)))
-        msg = "Producing samples from zx_sample {}, "
-        msg += "which yields images of size npx {}"
-        logger.info(msg.format(self.zx_sample, zx_to_npx(self.zx_sample, self.gen_ls)))
-        msg = "Saving samples and model data to file {}"
-        logger.info(msg.format(self.save_name))
-

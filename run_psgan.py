@@ -33,8 +33,6 @@ def main():
     sys.stderr = utils.copy_stream_to_log(sys.stderr, 'STDERR', log_file)
 
     psgan = PSGAN()
-    c = psgan.config
-    c.print_info()
     z_sample = utils.sample_noise_tensor(c, 1, c.zx_sample, c.zx_sample_quilt)
 
     samples_folder = os.path.join(os.path.dirname(log_file), 'samples')
@@ -62,7 +60,7 @@ def main():
         utils.save_samples(samples_folder, epoch, samples,
                            gen_samples, large_sample)
 
-        model_file = '{}_epoch{}.psgan'.format(c.save_name, epoch)
+        model_file = 'epoch_{}.psgan'.format(epoch)
         psgan.save(os.path.join(model_folder, model_file))
 
 

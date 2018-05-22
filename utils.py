@@ -64,6 +64,7 @@ def create_logger(name, file=None, stream=None, level=logging.INFO, need_fmt=Fal
                   datefmt='%Y-%m-%d:%H-%M-%S'):
     logger = logging.getLogger(name)
     if file or stream:
+        print 'Hi!'
         file_handler = logging.FileHandler(file) if file \
             else logging.StreamHandler(stream)
         file_handler.setLevel(level)

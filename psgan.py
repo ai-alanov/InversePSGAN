@@ -11,6 +11,7 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
 import numpy as np
+import logging
 from sklearn.externals import joblib
 
 from config import Config
@@ -147,7 +148,8 @@ class PSGAN(object):
 
 
     def save(self,name):
-        print "saving PSGAN parameters in file: ", name
+        logger = logging.getLogger('run_psgan.psgan_save')
+        logger.info("saving PSGAN parameters in file: {}".format(name))
         vals = {}
         vals["config"] = self.config
         vals["dis_W"] = [p.get_value() for p in self.dis_W]
@@ -160,7 +162,7 @@ class PSGAN(object):
 
         vals["wave_params"] = [p.get_value() for p in self.wave_params]
 
-        joblib.dump(vals,name,True)
+        joblib.dump(vals, name, True)
 
 
     def _setup_wave_params(self):

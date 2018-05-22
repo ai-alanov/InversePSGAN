@@ -101,6 +101,12 @@ def main():
                       help="load a model from checkpoint")
     parser.add_option("--data", type='string', default='texture',
                       help="path to data for training")
+    parser.add_option("--n_epochs", type='int', default=10,
+                      help="how many epochs to do globally")
+    parser.add_option("--n_iters", type='int', default=100,
+                      help="steps inside one epoch")
+    parser.add_option("b_size", type='int', default=25,
+                      help="batch size")
     (options, args) = parser.parse_args()
 
     log_file = create_logging_file('logs', vars(options))
@@ -140,21 +146,21 @@ def main():
     makedirs(samples_folder)
     model_folder = create_model_folder('models', vars(options))
 
-    while epoch < c.epoch_count:
+    while epoch < options.n_epochs:
         epoch += 1
         logger.info("Epoch %d" % epoch)
 
         Gcost = []
         Dcost = []
 
-        iters = c.epoch_iters / c.batch_size
+        iters = options.n_iters
         for it, samples in enumerate(tqdm(c.data_iter(), total=iters,
                                           file=sys.stdout)):
             if it >= iters:
                 break
             tot_iter += 1
 
-            Znp = sample_noise_tensor(c, c.batch_size, c.zx)
+            Znp = sample_noise_tensor(c, options.b_size, c.zx)
 
             if tot_iter % (c.k + 1) == 0:
                 cost = psgan.train_g(Znp)
@@ -165,7 +171,8 @@ def main():
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 
-        samples_epoch_folder = os.path.join(samples_folder, str(epoch))
+        samples_epoch_folder = os.path.join(samples_folder,
+                                            'epoch_{}'.format(epoch))
         makedirs(samples_epoch_folder)
         slist = []
         for img in samples:

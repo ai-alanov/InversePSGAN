@@ -29,6 +29,7 @@ def main():
 
     log_file = utils.create_logging_file('logs', vars(options))
     logger = utils.create_logger('run_psgan', file=log_file, need_fmt=True)
+    logger.setLevel(logging.INFO)
 
     class StreamToLogger(object):
 

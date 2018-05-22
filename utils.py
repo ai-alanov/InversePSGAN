@@ -99,25 +99,13 @@ def save_samples(save_dir, epoch, real_samples, gen_samples, large_sample):
     epoch_dir = os.path.join(save_dir, 'epoch_{}'.format(epoch))
     makedirs(epoch_dir)
 
-    slist = []
-    for img in real_samples:
-        slist += [img]
-    img = np.concatenate(slist, axis=2)
-    real_imgs_file = 'real_epoch{}.jpg'.format(epoch)
-    real_imgs_file = os.path.join(epoch_dir, real_imgs_file)
-    save_tensor(img, real_imgs_file)
-
-    slist = []
-    for img in gen_samples:
-        slist += [img]
-    img = np.concatenate(slist, axis=2)
-    gen_imgs_file = 'gen_epoch{}.jpg'.format(epoch)
-    gen_imgs_file = os.path.join(epoch_dir, gen_imgs_file)
-    save_tensor(img, gen_imgs_file)
-
-    large_img_file = 'large_epoch{}.jpg'.format(epoch)
-    large_img_file = os.path.join(epoch_dir, large_img_file)
-    save_tensor(large_sample, large_img_file)
+    samples = [np.concatenate(real_samples, axis=2),
+               np.concatenate(gen_samples, axis=2), large_sample]
+    samples_name = ['real', 'gen', 'large']
+    for name, sample in zip(samples_name, samples):
+        sample_file = '{}_epoch_{}'.format(name, epoch)
+        sample_file = os.path.join((epoch_dir, sample_file))
+        save_tensor(sample, sample_file)
 
 
 def sample_noise_tensor(config, batch_size, zx, zx_qlt=None):

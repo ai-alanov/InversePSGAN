@@ -282,7 +282,7 @@ class PSGAN(object):
 
     def _build_sgan(self):
         Z = lasagne.layers.InputLayer((None, self.config.nz, None, None))
-        X = lasagne.layers.InputLayer((self.config.batch_size, self.config.nc,
+        X = lasagne.layers.InputLayer((None, self.config.nc,
                                        self.config.npx, self.config.npx))
 
         gen_X = self._spatial_generator(Z)

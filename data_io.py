@@ -70,7 +70,3 @@ def save_tensor(tensor, filename):
     img = tensor_to_image(tensor)
     img = Image.fromarray(img)
     img.save(filename)
-
-
-if __name__=="__main__":
-    print "nothing here."

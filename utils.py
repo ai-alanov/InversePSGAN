@@ -2,6 +2,7 @@ import os
 import glob
 from datetime import datetime
 import csv
+import logging
 import numpy as np
 
 
@@ -56,6 +57,28 @@ def create_model_folder(model_dir, options):
             w.writerow(options)
     makedirs(model_folder)
     return model_folder
+
+
+# def create_logger(name, level=None, file=None, format='%(levelname)s:%(asctime)s:%(name)s: %(message)s', datefmt='%Y-%m-%d:%H-%M-%S'):
+#     logger = logging.getLogger(name)
+#     if file:
+#         file_handler = logging.
+#
+#
+#     logger = logging.getLogger('run_psgan')
+#     file_handler = logging.FileHandler(log_file)
+#     file_handler.setLevel(logging.INFO)
+#     log_format = '%(levelname)s:%(asctime)s:%(name)s: %(message)s'
+#     formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d:%H-%M-%S')
+#     file_handler.setFormatter(formatter)
+#     logger.addHandler(file_handler)
+#
+#     logger = logging.getLogger('run_psgan.psgan_build')
+#     stdout_handler = logging.StreamHandler(sys.stdout)
+#     stdout_handler.setLevel(logging.INFO)
+#     logger.addHandler(stdout_handler)
+#
+#     logger = logging.getLogger('run_psgan.config')
 
 
 def sample_noise_tensor(config, batch_size, zx, zx_qlt=None):

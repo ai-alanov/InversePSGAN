@@ -310,7 +310,7 @@ class PSGAN(object):
                                          self.config.lr, self.config.b1)
 
         logger = logging.getLogger('run_psgan.psgan_build')
-        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler = logging.FileHandler(sys.stdout)
         stdout_handler.setLevel(logging.INFO)
         logger.addHandler(stdout_handler)
         logger.info("Compiling the network...")

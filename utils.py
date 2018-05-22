@@ -65,6 +65,8 @@ def find_checkpoint(model_dir, checkpoint):
     if not checkpoint:
         return None
     if checkpoint == 'last':
+        print glob.glob(model_dir)
+        print glob.glob(sorted(glob.glob(model_dir))[-1])
         model_folder = sorted(glob.glob(sorted(glob.glob(model_dir))[-1]))[-2]
         last_model_name = sorted(glob.glob(model_folder))[-1]
         return last_model_name

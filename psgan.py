@@ -266,6 +266,7 @@ class PSGAN(object):
                 tconv(layers[-1], self.gen_fn[l], self.gen_ks[l],
                       self.gen_W[l], nonlinearity=relu),
                 gamma=self.gen_g[l], beta=self.gen_b[l]))
+            print l, self.gen_fn[l], self.gen_ks[l], self.gen_W[l].shape
         output  = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
                         self.gen_W[-1], nonlinearity=tanh)
 

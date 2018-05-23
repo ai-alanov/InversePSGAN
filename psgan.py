@@ -128,7 +128,8 @@ class PSGAN(object):
         joblib.dump(vals, name, True)
 
     def load(self, name):
-        print "loading parameters from file:", name
+        logger = utils.create_logger('run_psgan.psgan_load', stream=sys.stdout)
+        logger.info("loading parameters from file: {}".format(name))
 
         vals = joblib.load(name)
         self.config = vals["config"]

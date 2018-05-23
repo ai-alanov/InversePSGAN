@@ -122,6 +122,9 @@ class PSGAN(object):
 
         vals["wave_params"] = [p.get_value() for p in self.wave_params]
 
+        vals["means"] = [p.get_value() for p in self.means]
+        vals["inv_stds"] = [p.get_value() for p in self.inv_stds]
+
         joblib.dump(vals, name, True)
 
     def load(self, name):
@@ -139,6 +142,9 @@ class PSGAN(object):
         self.gen_b = [sharedX(p) for p in vals["gen_b"]]
 
         self.wave_params = [sharedX(p) for p in vals["wave_params"]]
+
+        self.means = [p for p in vals["means"]]
+        self.inv_stds = [p for p in vals["inv_stds"]]
 
         self.config.gen_ks = []
         self.config.gen_fn = []
@@ -256,20 +262,43 @@ class PSGAN(object):
     def _spatial_generator(self, inlayer):
         layers = [inlayer]
         layers.append(periodic(inlayer, self.config, self.wave_params))
+
+        means = []
+        inv_stds = []
         for l in range(self.gen_depth - 1):
             layers.append(batch_norm(
                 tconv(layers[-1], self.gen_fn[l], self.gen_ks[l],
                       self.gen_W[l], nonlinearity=relu),
-                gamma=self.gen_g[l], beta=self.gen_b[l]))
+                gamma=self.gen_g[l], beta=self.gen_b[l], alpha=1.0))
+            means += [layers[-1].input_layer.mean]
+            inv_stds += [layers[-1].input_layer.inv_std]
         output  = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
                         self.gen_W[-1], nonlinearity=tanh)
+        if not hasattr(self, 'means'):
+            self.means = means
+            self.inv_stds = inv_stds
 
+        return output
+
+    def _spatial_generator_det(self, inlayer):
+        layers = [inlayer]
+        layers.append(periodic(inlayer, self.config, self.wave_params))
+
+        for l in range(self.gen_depth - 1):
+            layers.append(batch_norm(
+                tconv(layers[-1], self.gen_fn[l], self.gen_ks[l],
+                      self.gen_W[l], nonlinearity=relu),
+                gamma=self.gen_g[l], beta=self.gen_b[l],
+                mean=self.means[l], inv_std=self.inv_stds[l]))
+        output = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
+                       self.gen_W[-1], nonlinearity=tanh)
         return output
 
     def _spatial_discriminator(self, inlayer):
         layers  = [inlayer]
         layers.append(conv(layers[-1], self.dis_fn[0], self.dis_ks[0],
                            self.dis_W[0], None, nonlinearity=Lrelu(0.2)))
+
         for l in range(1,self.dis_depth - 1):
             layers.append(batch_norm(
                 conv(layers[-1], self.dis_fn[l], self.dis_ks[l],
@@ -286,10 +315,13 @@ class PSGAN(object):
                                        self.config.npx, self.config.npx))
 
         gen_X = self._spatial_generator(Z)
+        gen_X_det = self._spatial_generator_det(Z)
         d_real = self._spatial_discriminator(X)
         d_fake = self._spatial_discriminator(gen_X)
 
         prediction_gen = lasagne.layers.get_output(gen_X)
+        prediction_gen_det = lasagne.layers.get_output(gen_X_det,
+                                                       deterministic=True)
         prediction_real = lasagne.layers.get_output(d_real)
         prediction_fake = lasagne.layers.get_output(d_fake)
 
@@ -321,4 +353,6 @@ class PSGAN(object):
         logger.info("Generator done.")
         self.generate = theano.function(
             [Z.input_var], prediction_gen, allow_input_downcast=True)
+        self.generate_det = theano.function(
+            [Z.input_var], prediction_gen_det, allow_input_downcast=True)
         logger.info("generate function done.")

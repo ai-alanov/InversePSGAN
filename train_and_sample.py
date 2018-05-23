@@ -5,6 +5,8 @@ from tqdm import tqdm
 
 import utils
 
+np.random.seed(1234)
+
 
 def train(model, config, logger, options, model_dir, samples_dir):
     utils.makedirs(samples_dir)
@@ -51,7 +53,7 @@ def sample(model, config, samples_dir, n_samples=5):
         global_noise = np.random.uniform(-1., 1., (1, config.nz_global, 1, 1))
         z_samples = utils.sample_noise_tensor(config, 5, config.zx,
                                               global_noise=global_noise)
-        gen_samples = model.generate(z_samples)
+        gen_samples = model.generate_det(z_samples)
         gen_samples = np.concatenate(gen_samples, axis=2)
         all_samples.append(gen_samples)
     utils.save_samples(samples_dir, all_samples,

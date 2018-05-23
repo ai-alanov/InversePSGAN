@@ -120,7 +120,7 @@ def save_samples(save_dir, samples, names, epoch=None):
 
     for name, sample in zip(names, samples):
         sample_file = '{}{}.jpg'.format(
-            name, '_epoch_{}'.format(epoch) if epoch is not None else '')
+            name, '_epoch_{:04d}'.format(epoch) if epoch is not None else '')
         sample_file = os.path.join(save_dir, sample_file)
         save_tensor(sample, sample_file)
 

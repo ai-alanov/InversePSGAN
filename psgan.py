@@ -144,8 +144,8 @@ class PSGAN(object):
 
         self.wave_params = [sharedX(p) for p in vals["wave_params"]]
 
-        self.means = [p for p in vals["means"]]
-        self.inv_stds = [p for p in vals["inv_stds"]]
+        self.means = [sharedX(p) for p in vals["means"]]
+        self.inv_stds = [sharedX(p) for p in vals["inv_stds"]]
 
         self.config.gen_ks = []
         self.config.gen_fn = []

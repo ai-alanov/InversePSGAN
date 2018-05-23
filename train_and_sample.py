@@ -16,7 +16,7 @@ def train(model, config, logger, options, model_dir, samples_dir):
         Gcost = []
         Dcost = []
 
-        for it in range(options.n_iters):
+        for it in tqdm(range(options.n_iters), file=sys.stdout):
             Znp = utils.sample_noise_tensor(config, options.b_size, config.zx)
 
             if it % (config.k + 1) == 0:

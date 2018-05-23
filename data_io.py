@@ -36,7 +36,7 @@ def get_texture_iter(texture_path, npx=128, batch_size=64, \
     HW    = npx
     imgBig = None
     try:
-        imgBig = Image.open(texture_path)
+        imgBig = image_to_tensor(Image.open(texture_path))
         if mirror:
             imgBig = imgBig.transpose(FLIP_LEFT_RIGHT)
     except:

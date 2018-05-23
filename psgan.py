@@ -270,6 +270,7 @@ class PSGAN(object):
             print l, self.gen_fn[l], self.gen_ks[l], self.vals['gen_W'][l].shape
         output  = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
                         self.gen_W[-1], nonlinearity=tanh)
+        print self.gen_fn[-1], self.gen_ks[-1], self.vals['gen_W'][-1].shape
 
         return output
 

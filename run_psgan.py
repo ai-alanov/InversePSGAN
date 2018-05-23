@@ -5,7 +5,7 @@ import sys
 
 from psgan import PSGAN
 import utils
-from train_and_sample import train
+from train_and_sample import train, sample
 
 
 def main():
@@ -35,10 +35,14 @@ def main():
     checkpoint_path = utils.find_checkpoint('models', options.checkpoint)
     psgan = PSGAN(checkpoint_path)
 
-    model_dir = utils.create_model_folder('models', vars(options))
-    samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
+    if options.mode == 'train':
+        model_dir = utils.create_model_folder('models', vars(options))
+        samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
 
-    train(psgan, psgan.config, logger, options, model_dir, samples_dir)
+        train(psgan, psgan.config, logger, options, model_dir, samples_dir)
+    elif options.mode == 'sample':
+        samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
+        sample(psgan, psgan.config, samples_dir)
 
 
 if __name__ == '__main__':

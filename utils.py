@@ -113,34 +113,36 @@ def copy_stream_to_log(stream, stream_name, file):
     return StreamToLogger(stream, logger)
 
 
-def save_samples(save_dir, epoch, real_samples, gen_samples, large_sample):
-    epoch_dir = os.path.join(save_dir, 'epoch_{}'.format(epoch))
-    makedirs(epoch_dir)
+def save_samples(save_dir, samples, names, epoch=None):
+    if epoch:
+        save_dir = os.path.join(save_dir, 'epoch_{}'.format(epoch))
+        makedirs(save_dir)
 
-    samples = [np.concatenate(real_samples, axis=2),
-               np.concatenate(gen_samples, axis=2), large_sample]
-    samples_name = ['real', 'gen', 'large']
-    for name, sample in zip(samples_name, samples):
-        sample_file = '{}_epoch_{}.jpg'.format(name, epoch)
-        sample_file = os.path.join(epoch_dir, sample_file)
+    for name, sample in zip(names, samples):
+        sample_file = '{}{}.jpg'.format(
+            name, '_epoch_{}'.format(epoch) if epoch else '')
+        sample_file = os.path.join(save_dir, sample_file)
         save_tensor(sample, sample_file)
 
 
-def sample_noise_tensor(config, batch_size, zx, zx_qlt=None):
+def sample_noise_tensor(config, batch_size, zx, zx_quilt=None,
+                        global_noise=None):
     Z = np.zeros((batch_size, config.nz, zx, zx))
-    Z[:, config.nz_global:config.nz_global+config.nz_local] = \
-        np.random.uniform(-1., 1., (batch_size, config.nz_local, zx, zx))
+    Z_local = np.random.uniform(-1., 1., (batch_size, config.nz_local, zx, zx))
+    Z[:, config.nz_global:config.nz_global + config.nz_local] = Z_local
 
-    if zx_qlt is None:
-        Z[:, :config.nz_global] = \
-            np.random.uniform(-1., 1., (batch_size, config.nz_global, 1, 1))
+    if not global_noise is None:
+        Z[:, :config.nz_global] = global_noise
+    elif zx_quilt is None:
+        Z[:, :config.nz_global] = np.random.uniform(-1., 1., (
+        batch_size, config.nz_global, 1, 1))
     else:
-        Z_g = Z[:, :config.nz_global]
-        for i in range(zx / zx_qlt):
-            for j in range(zx / zx_qlt):
-                Z_g[:, :, i*zx_qlt:(i+1)*zx_qlt, j*zx_qlt:(j+1)*zx_qlt] = \
-                    np.random.uniform(-1., 1.,
-                                      (batch_size, config.nz_global, 1, 1))
+        for i in range(zx / zx_quilt):
+            for j in range(zx / zx_quilt):
+                Z_global = np.random.uniform(-1., 1., (
+                batch_size, config.nz_global, 1, 1))
+                Z[:, :config.nz_global, i * zx_quilt:(i + 1) * zx_quilt,
+                j * zx_quilt:(j + 1) * zx_quilt] = Z_global
 
     if config.nz_periodic > 0:
         for i, pixel in zip(range(1, config.nz_periodic + 1),

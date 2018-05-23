@@ -27,7 +27,7 @@ def train(model, config, logger, options, model_dir, samples_dir):
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 
-        samples = next(config.data_iter(options.b_size))
+        samples = next(config.data_iter(options.t_path, options.b_size))
         samples = np.concatenate(samples, axis=2)
 
         Znp = utils.sample_noise_tensor(config, options.b_size, config.zx)

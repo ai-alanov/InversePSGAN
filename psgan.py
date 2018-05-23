@@ -99,7 +99,6 @@ class PSGAN(object):
             print "loading parameters from file:", name
 
             vals =joblib.load(name)
-            self.vals = vals
             self.config = vals["config"]
 
             print "global dimensions of loaded config file", \
@@ -125,11 +124,7 @@ class PSGAN(object):
                     self.config.gen_fn +=[vals["gen_W"][i].shape[0]]
                 self.config.gen_ks += [(vals["gen_W"][i].shape[2],
                                         vals["gen_W"][i].shape[3])]
-                print 'filter size: ', vals["gen_W"][i].shape[0]
-                print 'kernel size: ', (vals["gen_W"][i].shape[2],
-                                        vals["gen_W"][i].shape[3])
             self.config.nc = vals["gen_W"][i].shape[1]
-            print 'nc: ', vals["gen_W"][i].shape[1]
             self.config.gen_fn += [self.config.nc]
 
             self.config.dis_ks = []
@@ -139,6 +134,7 @@ class PSGAN(object):
                 self.config.dis_fn += [vals["dis_W"][i].shape[1]]
                 self.config.dis_ks += [(vals["gen_W"][i].shape[2],
                                         vals["gen_W"][i].shape[3])]
+            self.config.dis_fn = self.config.dis_fn[1:] + [1]
 
             self._setup_gen_params(self.config.gen_ks, self.config.gen_fn)
             self._setup_dis_params(self.config.dis_ks, self.config.dis_fn)
@@ -267,10 +263,8 @@ class PSGAN(object):
                 tconv(layers[-1], self.gen_fn[l], self.gen_ks[l],
                       self.gen_W[l], nonlinearity=relu),
                 gamma=self.gen_g[l], beta=self.gen_b[l]))
-            print l, self.gen_fn[l], self.gen_ks[l], self.vals['gen_W'][l].shape
         output  = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
                         self.gen_W[-1], nonlinearity=tanh)
-        print self.gen_fn[-1], self.gen_ks[-1], self.vals['gen_W'][-1].shape
 
         return output
 

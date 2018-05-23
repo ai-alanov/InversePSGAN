@@ -124,7 +124,11 @@ class PSGAN(object):
                     self.config.gen_fn +=[vals["gen_W"][i].shape[0]]
                 self.config.gen_ks += [(vals["gen_W"][i].shape[2],
                                         vals["gen_W"][i].shape[3])]
+                print 'filter size: ', vals["gen_W"][i].shape[0]
+                print 'kernel size: ', (vals["gen_W"][i].shape[2],
+                                        vals["gen_W"][i].shape[3])
             self.config.nc = vals["gen_W"][i].shape[1]
+            print 'nc: ', vals["gen_W"][i].shape[1]
             self.config.gen_fn += [self.config.nc]
 
             self.config.dis_ks = []
@@ -249,12 +253,10 @@ class PSGAN(object):
         for l in range(self.gen_depth - 1):
             self.gen_W += [sharedX(self.w_init.sample(
                 (last,self.gen_fn[l], self.gen_ks[l][0], self.gen_ks[l][1])))]
-            print last,self.gen_fn[l], self.gen_ks[l][0], self.gen_ks[l][1]
             last = self.gen_fn[l]
 
         self.gen_W += [sharedX(self.w_init.sample(
             (last,self.gen_fn[-1], self.gen_ks[-1][0],self.gen_ks[-1][1])))]
-        print last,self.gen_fn[-1], self.gen_ks[-1][0],self.gen_ks[-1][1]
 
     def _spatial_generator(self, inlayer):
         layers = [inlayer]

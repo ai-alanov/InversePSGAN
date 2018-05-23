@@ -24,7 +24,7 @@ def tensor_to_image(tensor):
     return np.uint8(img)
     
 
-def get_texture_iter(folder, npx=128, batch_size=64, \
+def get_texture_iter(texture_path, npx=128, batch_size=64, \
                      filter=None, mirror=True):
     '''
     @param folder       iterate of pictures from this folder
@@ -34,24 +34,17 @@ def get_texture_iter(folder, npx=128, batch_size=64, \
     @return a batch of image patches fo size npx x npx, with values in [0,1]
     '''
     HW    = npx
-    imTex = []
-    files = os.listdir(folder)
-    for f in files:
-        name = folder + f
-        try:
-            img = Image.open(name)
-            imTex += [image_to_tensor(img)]
-            if mirror:
-                img = img.transpose(FLIP_LEFT_RIGHT)
-                imTex += [image_to_tensor(img)]
-        except:
-            print "Image ", name, " failed to load!"
+    imgBig = None
+    try:
+        imgBig = Image.open(texture_path)
+        if mirror:
+            imgBig = imgBig.transpose(FLIP_LEFT_RIGHT)
+    except:
+        print "Image ", texture_path, " failed to load!"
 
     while True:
         data=np.zeros((batch_size,3,npx,npx))                   # NOTE: assumes 3 channels!
         for i in range(batch_size):
-            ir = np.random.randint(len(imTex))
-            imgBig = imTex[ir]
             if HW < imgBig.shape[1] and HW < imgBig.shape[2]:   # sample patches
                 h = np.random.randint(imgBig.shape[1] - HW)
                 w = np.random.randint(imgBig.shape[2] - HW)

@@ -22,7 +22,7 @@ def train(model, config, logger, options, model_dir, samples_dir):
             if it % (config.k + 1) == 0:
                 Gcost.append(model.train_g(Znp))
             else:
-                samples = next(config.data_iter(options.b_size))
+                samples = next(config.data_iter(options.t_path, options.b_size))
                 Dcost.append(model.train_d(samples, Znp))
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
@@ -40,9 +40,9 @@ def train(model, config, logger, options, model_dir, samples_dir):
 
         utils.save_samples(samples_dir, [samples, gen_samples, large_sample],
                            ['real', 'gen', 'large'], epoch=epoch)
-
-        model_file = 'epoch_{}.model'.format(epoch)
-        model.save(os.path.join(model_dir, model_file))
+        if (epoch+1) % 10 == 0:
+            model_file = 'epoch_{}.model'.format(epoch)
+            model.save(os.path.join(model_dir, model_file))
 
 
 def sample(model, config, samples_dir, n_samples=5):

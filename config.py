@@ -46,19 +46,9 @@ class Config(object):
                                                                    # number of filters
         self.npx    = zx_to_npx(self.zx, self.gen_ls) # num of pixels width/height
                                                       # of images in X
-        self.current_dir = os.path.abspath('.')
-        self.sub_name    = "texture/"
-        self.texture_dir = os.path.join(self.current_dir, self.sub_name)
-        self.save_name = os.path.dirname(self.sub_name)
-        self.save_name += "_filters%d_npx%d_%dgL_%ddL" \
-                          % (self.dis_fn[0], self.npx, self.gen_ls, self.dis_ls)
-        self.save_name += "_%dGlobal_%dPeriodic_%sAffine_%dLocal" \
-                          % (self.nz_global, self.nz_periodic,
-                             self.periodic_affine, self.nz_local)
-        self.load_name   = None # if None, initializing network from scratch
            
     ## gives back the correct data iterator given class variables --
     ## this way we avoid the python restriction not to pickle iterator objects
-    def data_iter(self, batch_size):
-        return get_texture_iter(self.texture_dir, npx=self.npx,
+    def data_iter(self, texture_path, batch_size):
+        return get_texture_iter(texture_path, npx=self.npx,
                                 mirror=False, batch_size=batch_size)

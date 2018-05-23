@@ -17,12 +17,14 @@ def main():
                       help="load a model from checkpoint, format: \'Y-m-d.id\'")
     parser.add_option("--data", type='string', default='texture',
                       help="path to data for training")
-    parser.add_option("--n_epochs", type='int', default=10,
+    parser.add_option("--n_epochs", type='int', default=100,
                       help="how many epochs to do globally")
-    parser.add_option("--n_iters", type='int', default=100,
+    parser.add_option("--n_iters", type='int', default=1000,
                       help="steps inside one epoch")
     parser.add_option("--b_size", type='int', default=25,
                       help="batch size")
+    parser.add_option("--t_path", type='string',
+                      help="path to texture for train")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))

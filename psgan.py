@@ -99,6 +99,7 @@ class PSGAN(object):
             print "loading parameters from file:", name
 
             vals =joblib.load(name)
+            self.vals = vals
             self.config = vals["config"]
 
             print "global dimensions of loaded config file", \
@@ -266,7 +267,7 @@ class PSGAN(object):
                 tconv(layers[-1], self.gen_fn[l], self.gen_ks[l],
                       self.gen_W[l], nonlinearity=relu),
                 gamma=self.gen_g[l], beta=self.gen_b[l]))
-            print l, self.gen_fn[l], self.gen_ks[l], self.gen_W[l].shape
+            print l, self.gen_fn[l], self.gen_ks[l], self.vals['gen_W'][l].shape
         output  = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
                         self.gen_W[-1], nonlinearity=tanh)
 

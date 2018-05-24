@@ -101,73 +101,11 @@ class PSGAN(object):
 
             self._setup_gen_params(self.config.gen_ks, self.config.gen_fn)
             self._setup_dis_params(self.config.dis_ks, self.config.dis_fn)
-            self._sample_initials()
+            self.__sample_initials()
 
             self._setup_wave_params()
 
-        self._build_sgan()
-
-    def save(self, name):
-        logger = logging.getLogger('run_psgan.psgan_save')
-        logger.info("saving PSGAN parameters in file: {}".format(name))
-        vals = {}
-        vals["config"] = self.config
-        vals["dis_W"] = [p.get_value() for p in self.dis_W]
-        vals["dis_g"] = [p.get_value() for p in self.dis_g]
-        vals["dis_b"] = [p.get_value() for p in self.dis_b]
-
-        vals["gen_W"] = [p.get_value() for p in self.gen_W]
-        vals["gen_g"] = [p.get_value() for p in self.gen_g]
-        vals["gen_b"] = [p.get_value() for p in self.gen_b]
-
-        vals["wave_params"] = [p.get_value() for p in self.wave_params]
-
-        vals["means"] = [p.get_value() for p in self.means]
-        vals["inv_stds"] = [p.get_value() for p in self.inv_stds]
-
-        joblib.dump(vals, name, True)
-
-    def load(self, name):
-        logger = utils.create_logger('run_psgan.psgan_load', stream=sys.stdout)
-        logger.info("loading parameters from file: {}".format(name))
-
-        vals = joblib.load(name)
-        self.config = vals["config"]
-
-        self.dis_W = [sharedX(p) for p in vals["dis_W"]]
-        self.dis_g = [sharedX(p) for p in vals["dis_g"]]
-        self.dis_b = [sharedX(p) for p in vals["dis_b"]]
-
-        self.gen_W = [sharedX(p) for p in vals["gen_W"]]
-        self.gen_g = [sharedX(p) for p in vals["gen_g"]]
-        self.gen_b = [sharedX(p) for p in vals["gen_b"]]
-
-        self.wave_params = [sharedX(p) for p in vals["wave_params"]]
-
-        self.means = [sharedX(p) for p in vals["means"]]
-        self.inv_stds = [sharedX(p) for p in vals["inv_stds"]]
-
-        self.config.gen_ks = []
-        self.config.gen_fn = []
-        l = len(vals["gen_W"])
-        for i in range(l):
-            if i == 0:
-                self.config.nz = vals["gen_W"][i].shape[0]
-            else:
-                self.config.gen_fn += [vals["gen_W"][i].shape[0]]
-            self.config.gen_ks += [(vals["gen_W"][i].shape[2],
-                                    vals["gen_W"][i].shape[3])]
-        self.config.nc = vals["gen_W"][i].shape[1]
-        self.config.gen_fn += [self.config.nc]
-
-        self.config.dis_ks = []
-        self.config.dis_fn = []
-        l = len(vals["dis_W"])
-        for i in range(l):
-            self.config.dis_fn += [vals["dis_W"][i].shape[1]]
-            self.config.dis_ks += [(vals["gen_W"][i].shape[2],
-                                    vals["gen_W"][i].shape[3])]
-        self.config.dis_fn = self.config.dis_fn[1:] + [1]
+        self.__build_sgan()
 
     def _setup_wave_params(self):
 
@@ -223,7 +161,7 @@ class PSGAN(object):
         else:
             self.dis_fn = [64] * self.dis_depth
 
-    def _sample_initials(self):
+    def __sample_initials(self):
         self.w_init = lasagne.init.Normal(std=0.02)
         self.b_init = lasagne.init.Constant(val=0.0)
         self.g_init = lasagne.init.Normal(mean=1., std=0.02)
@@ -310,7 +248,7 @@ class PSGAN(object):
 
         return output
 
-    def _build_sgan(self):
+    def __build_sgan(self):
         Z = lasagne.layers.InputLayer((None, self.config.nz, None, None))
         X = lasagne.layers.InputLayer((None, self.config.nc,
                                        self.config.npx, self.config.npx))
@@ -357,3 +295,65 @@ class PSGAN(object):
         self.generate_det = theano.function(
             [Z.input_var], prediction_gen_det, allow_input_downcast=True)
         logger.info("generate function done.")
+
+    def save(self, name):
+        logger = logging.getLogger('run_psgan.psgan_save')
+        logger.info("saving PSGAN parameters in file: {}".format(name))
+        vals = {}
+        vals["config"] = self.config
+        vals["dis_W"] = [p.get_value() for p in self.dis_W]
+        vals["dis_g"] = [p.get_value() for p in self.dis_g]
+        vals["dis_b"] = [p.get_value() for p in self.dis_b]
+
+        vals["gen_W"] = [p.get_value() for p in self.gen_W]
+        vals["gen_g"] = [p.get_value() for p in self.gen_g]
+        vals["gen_b"] = [p.get_value() for p in self.gen_b]
+
+        vals["wave_params"] = [p.get_value() for p in self.wave_params]
+
+        vals["means"] = [p.get_value() for p in self.means]
+        vals["inv_stds"] = [p.get_value() for p in self.inv_stds]
+
+        joblib.dump(vals, name, True)
+
+    def load(self, name):
+        logger = utils.create_logger('run_psgan.psgan_load', stream=sys.stdout)
+        logger.info("loading parameters from file: {}".format(name))
+
+        vals = joblib.load(name)
+        self.config = vals["config"]
+
+        self.dis_W = [sharedX(p) for p in vals["dis_W"]]
+        self.dis_g = [sharedX(p) for p in vals["dis_g"]]
+        self.dis_b = [sharedX(p) for p in vals["dis_b"]]
+
+        self.gen_W = [sharedX(p) for p in vals["gen_W"]]
+        self.gen_g = [sharedX(p) for p in vals["gen_g"]]
+        self.gen_b = [sharedX(p) for p in vals["gen_b"]]
+
+        self.wave_params = [sharedX(p) for p in vals["wave_params"]]
+
+        self.means = [sharedX(p) for p in vals["means"]]
+        self.inv_stds = [sharedX(p) for p in vals["inv_stds"]]
+
+        self.config.gen_ks = []
+        self.config.gen_fn = []
+        l = len(vals["gen_W"])
+        for i in range(l):
+            if i == 0:
+                self.config.nz = vals["gen_W"][i].shape[0]
+            else:
+                self.config.gen_fn += [vals["gen_W"][i].shape[0]]
+            self.config.gen_ks += [(vals["gen_W"][i].shape[2],
+                                    vals["gen_W"][i].shape[3])]
+        self.config.nc = vals["gen_W"][i].shape[1]
+        self.config.gen_fn += [self.config.nc]
+
+        self.config.dis_ks = []
+        self.config.dis_fn = []
+        l = len(vals["dis_W"])
+        for i in range(l):
+            self.config.dis_fn += [vals["dis_W"][i].shape[1]]
+            self.config.dis_ks += [(vals["gen_W"][i].shape[2],
+                                    vals["gen_W"][i].shape[3])]
+        self.config.dis_fn = self.config.dis_fn[1:] + [1]

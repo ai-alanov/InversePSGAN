@@ -24,32 +24,34 @@ def tensor_to_image(tensor):
     return np.uint8(img)
     
 
-def get_texture_iter(texture_path, npx=128, batch_size=64, \
-                     filter=None, mirror=True):
-    '''
-    @param folder       iterate of pictures from this folder
-    @param npx          size of patches to extract
-    @param n_batches    number of batches to yield - if None, it yields forever
-    @param mirror       if True the images get augmented by left-right mirroring
-    @return a batch of image patches fo size npx x npx, with values in [0,1]
-    '''
-    HW    = npx
-    imgBig = None
+def get_texture_iter(texture_path, npx=128, batch_size=64, mirror=False):
+    HW = npx
+    imTex = []
     try:
-        imgBig = image_to_tensor(Image.open(texture_path))
-        if mirror:
-            imgBig = imgBig.transpose(FLIP_LEFT_RIGHT)
+        files = os.listdir(texture_path)
+        files = [texture_path + file for file in files]
     except:
-        print "Image ", texture_path, " failed to load!"
+        files = [texture_path]
+    for file in files:
+        try:
+            img = Image.open(file)
+            imTex += [image_to_tensor(img)]
+            if mirror:
+                img = img.transpose(FLIP_LEFT_RIGHT)
+                imTex += [image_to_tensor(img)]
+        except:
+            print "Image ", file, " failed to load!"
 
     while True:
-        data=np.zeros((batch_size,3,npx,npx))                   # NOTE: assumes 3 channels!
+        data = np.zeros((batch_size, 3, npx, npx))  # NOTE: assumes 3 channels!
         for i in range(batch_size):
-            if HW < imgBig.shape[1] and HW < imgBig.shape[2]:   # sample patches
+            ir = np.random.randint(len(imTex))
+            imgBig = imTex[ir]
+            if HW < imgBig.shape[1] and HW < imgBig.shape[2]:  # sample patches
                 h = np.random.randint(imgBig.shape[1] - HW)
                 w = np.random.randint(imgBig.shape[2] - HW)
                 img = imgBig[:, h:h + HW, w:w + HW]
-            else:                                               # whole input texture
+            else:
                 img = imgBig
             data[i] = img
 

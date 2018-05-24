@@ -3,7 +3,7 @@ from optparse import OptionParser
 import os
 import sys
 
-from psgan import PSGAN
+from psgan import PSGAN, InversePSGAN
 import utils
 from train_and_sample import train, sample
 
@@ -13,6 +13,8 @@ def main():
                           version="%prog 1.0")
     parser.add_option("--mode", type='string', default='train',
                       help="train or sample")
+    parser.add_option("--is_inverse", type='int', default=0,
+                      help="use PSGAN or InversePSGAN")
     parser.add_option("--checkpoint", type='string', default=None,
                       help="load a model from checkpoint, format: \'Y-m-d.id\'")
     parser.add_option("--data", type='string', default='texture',
@@ -35,13 +37,17 @@ def main():
 
 
     checkpoint_path = utils.find_checkpoint('models', options.checkpoint)
-    psgan = PSGAN(checkpoint_path)
+    if not options.is_inverse:
+        psgan = PSGAN(checkpoint_path)
+    else:
+        psgan = InversePSGAN(checkpoint_path)
 
     if options.mode == 'train':
         model_dir = utils.create_model_folder('models', vars(options))
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
 
-        train(psgan, psgan.config, logger, options, model_dir, samples_dir)
+        train(psgan, psgan.config, logger, options, model_dir,
+              samples_dir, inverse=options.is_inverse)
     elif options.mode == 'sample':
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
         sample(psgan, psgan.config, samples_dir)

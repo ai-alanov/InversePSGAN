@@ -8,7 +8,7 @@ import utils
 np.random.seed(1234)
 
 
-def train(model, config, logger, options, model_dir, samples_dir):
+def train(model, config, logger, options, model_dir, samples_dir, inverse=False):
     utils.makedirs(samples_dir)
 
     for epoch in tqdm(range(options.n_epochs), file=sys.stdout):
@@ -19,28 +19,39 @@ def train(model, config, logger, options, model_dir, samples_dir):
         samples_generator = config.data_iter(options.t_path, options.b_size)
 
         for it in tqdm(range(options.n_iters), file=sys.stdout):
-            Znp = utils.sample_noise_tensor(config, options.b_size, config.zx)
+            Z_global = None
+            if inverse:
+                Z_global = np.random.uniform(
+                    -1., 1., (options.b_size, config.nz_global, 1, 1))
+            Z_samples = utils.sample_noise_tensor(
+                config, options.b_size, config.zx, global_noise=Z_global)
 
+            X_samples = next(samples_generator)
             if it % (config.k + 1) == 0:
-                Gcost.append(model.train_g(Znp))
+                if not inverse:
+                    Gcost.append(model.train_g(Z_samples))
+                else:
+                    Gcost.append(model.train_g(X_samples, Z_samples, Z_global))
             else:
-                samples = next(samples_generator)
-                Dcost.append(model.train_d(samples, Znp))
+                if not inverse:
+                    Dcost.append(model.train_d(X_samples, Z_samples))
+                else:
+                    Dcost.append(model.train_d(X_samples, Z_samples, Z_global))
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 
-        samples = next(samples_generator)
-        samples = np.concatenate(samples, axis=2)
+        X_samples = next(samples_generator)
+        X_samples = np.concatenate(X_samples, axis=2)
 
-        Znp = utils.sample_noise_tensor(config, options.b_size, config.zx)
-        gen_samples = model.generate(Znp)
+        Z_samples = utils.sample_noise_tensor(config, options.b_size, config.zx)
+        gen_samples = model.generate(Z_samples)
         gen_samples = np.concatenate(gen_samples, axis=2)
 
         z_sample = utils.sample_noise_tensor(config, 1, config.zx_sample,
                                              config.zx_sample_quilt)
         large_sample = model.generate(z_sample)[0]
 
-        utils.save_samples(samples_dir, [samples, gen_samples, large_sample],
+        utils.save_samples(samples_dir, [X_samples, gen_samples, large_sample],
                            ['real', 'gen', 'large'], epoch=epoch)
         if (epoch+1) % 10 == 0:
             model_file = 'epoch_{}.model'.format(epoch)

@@ -398,34 +398,31 @@ class InversePSGAN(PSGAN):
              sharedX(self.w_init.sample((self.dis_fn[0], 1, self.dis_ks[0][0],
                                     self.dis_ks[0][1])))))
         for l in range(self.dis_depth - 2):
-            self.dis_W.append(sharedX(self.w_init.sample((self.dis_fn[l + 1],
-                                                     2 * self.dis_fn[
-                                                         l] if l == 0 else
-                                                     self.dis_fn[l],
-                                                     self.dis_ks[l + 1][0],
-                                                     self.dis_ks[l + 1][1]))))
+            self.dis_W.append(sharedX(self.w_init.sample(
+                (self.dis_fn[l + 1], 2 * self.dis_fn[l]
+                if l == 0 else self.dis_fn[l], self.dis_ks[l + 1][0],
+                 self.dis_ks[l + 1][1]))))
             self.dis_b.append(sharedX(self.b_init.sample((self.dis_fn[l + 1]))))
             self.dis_g.append(sharedX(self.g_init.sample((self.dis_fn[l + 1]))))
-        self.dis_W.append(
-            sharedX(self.w_init.sample((self.dis_fn[-1], self.dis_fn[-2],
-                                   self.dis_ks[-1][0], self.dis_ks[-1][1]))))
+        self.dis_W.append(sharedX(self.w_init.sample(
+            (self.dis_fn[-1], self.dis_fn[-2],
+             self.dis_ks[-1][0], self.dis_ks[-1][1]))))
 
         self.gen_z_W = []
         self.gen_z_b = []
         self.gen_z_g = []
         self.gen_z_W.append(
             sharedX(self.w_init.sample(
-                (self.gen_z_fn[0], self.config.nc,
-                 self.gen_z_ks[0][0], self.gen_z_ks[0][1]))))
+                (self.gen_z_fn[0], self.config.nc, self.gen_z_ks[0][0],
+                 self.gen_z_ks[0][1]))))
         for l in range(self.gen_z_depth - 1):
-            self.gen_z_W.append(
-                sharedX(self.w_init.sample(
-                    (self.gen_z_fn[l + 1], self.gen_z_fn[l],
-                     self.gen_z_ks[l + 1][0], self.gen_z_ks[l + 1][1]))))
-            self.gen_z_b.append(
-                sharedX(self.b_init.sample((self.gen_z_fn[l + 1]))))
-            self.gen_z_g.append(
-                sharedX(self.g_init.sample((self.gen_z_fn[l + 1]))))
+            self.gen_z_W.append(sharedX(self.w_init.sample(
+                (self.gen_z_fn[l + 1], self.gen_z_fn[l],
+                 self.gen_z_ks[l + 1][0], self.gen_z_ks[l + 1][1]))))
+            self.gen_z_b.append(sharedX(self.b_init.sample(
+                (self.gen_z_fn[l + 1]))))
+            self.gen_z_g.append(sharedX(self.g_init.sample(
+                (self.gen_z_fn[l + 1]))))
 
         self.transform_z_W = sharedX(self.w_init.sample((1, 1, 5, 5)))
 
@@ -591,7 +588,8 @@ class InversePSGAN(PSGAN):
         logger.info("saving InversePSGAN parameters in file: {}".format(name))
         vals = {}
         vals["config"] = self.config
-        vals["dis_W"] = [p.get_value() for p in self.dis_W]
+        vals["dis_W"] = [(p.get_value() for p in self.dis_W[0])]
+        vals["dis_W"] += [p.get_value() for p in self.dis_W[1:]]
         vals["dis_g"] = [p.get_value() for p in self.dis_g]
         vals["dis_b"] = [p.get_value() for p in self.dis_b]
 
@@ -599,12 +597,72 @@ class InversePSGAN(PSGAN):
         vals["gen_g"] = [p.get_value() for p in self.gen_g]
         vals["gen_b"] = [p.get_value() for p in self.gen_b]
 
+        vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
+        vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]
+        vals["gen_z_b"] = [p.get_value() for p in self.gen_z_b]
+        vals["transform_z_W"] = self.transform_z_W.get_value()
+
         vals["wave_params"] = [p.get_value() for p in self.wave_params]
 
         vals["means"] = [p.get_value() for p in self.means]
         vals["inv_stds"] = [p.get_value() for p in self.inv_stds]
 
+        vals["means_z"] = [p.get_value() for p in self.means_z]
+        vals["inv_stds_z"] = [p.get_value() for p in self.inv_stds_z]
+
         joblib.dump(vals, name, True)
 
     def load(self, name):
-        pass
+        logger = utils.create_logger('run_psgan.invpsgan_load',
+                                     stream=sys.stdout)
+        logger.info("loading parameters from file: {}".format(name))
+
+        vals = joblib.load(name)
+        self.config = vals["config"]
+
+        self.dis_W = [(sharedX(p) for p in vals["dis_W"][0])]
+        self.dis_W += [sharedX(p) for p in vals["dis_W"][1:]]
+        self.dis_g = [sharedX(p) for p in vals["dis_g"]]
+        self.dis_b = [sharedX(p) for p in vals["dis_b"]]
+
+        self.gen_W = [sharedX(p) for p in vals["gen_W"]]
+        self.gen_g = [sharedX(p) for p in vals["gen_g"]]
+        self.gen_b = [sharedX(p) for p in vals["gen_b"]]
+
+        self.gen_z_W = [sharedX(p) for p in vals["gen_z_W"]]
+        self.gen_z_g = [sharedX(p) for p in vals["gen_z_g"]]
+        self.gen_z_b = [sharedX(p) for p in vals["gen_z_b"]]
+        self.transform_z_W = sharedX(vals["transform_z_W"])
+
+        self.wave_params = [sharedX(p) for p in vals["wave_params"]]
+
+        self.means = [sharedX(p) for p in vals["means"]]
+        self.inv_stds = [sharedX(p) for p in vals["inv_stds"]]
+
+        self.means_z = [sharedX(p) for p in vals["means_z"]]
+        self.inv_stds_z = [sharedX(p) for p in vals["inv_stds_z"]]
+
+        self.config.gen_ks = []
+        self.config.gen_fn = []
+        l = len(vals["gen_W"])
+        for i in range(l):
+            if i == 0:
+                self.config.nz = vals["gen_W"][i].shape[0]
+            else:
+                self.config.gen_fn += [vals["gen_W"][i].shape[0]]
+            self.config.gen_ks += [(vals["gen_W"][i].shape[2],
+                                    vals["gen_W"][i].shape[3])]
+        self.config.nc = vals["gen_W"][i].shape[1]
+        self.config.gen_fn += [self.config.nc]
+
+        self.config.dis_ks = []
+        self.config.dis_fn = []
+        l = len(vals["dis_W"])
+        for i in range(l):
+            if i == 0:
+                pass
+            else:
+                self.config.dis_fn += [vals["dis_W"][i].shape[1]]
+            self.config.dis_ks += [(vals["gen_W"][i].shape[2],
+                                    vals["gen_W"][i].shape[3])]
+        self.config.dis_fn += [1]

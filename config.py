@@ -46,8 +46,13 @@ class Config(object):
                                                                    # number of filters
         self.npx    = zx_to_npx(self.zx, self.gen_ls) # num of pixels width/height
                                                       # of images in X
-           
-    ## gives back the correct data iterator given class variables --
+
+        self.gen_z_ks = [(5, 5)] * 5 + [(1, 1)]
+        self.gen_z_ls = len(self.gen_z_ks)
+        self.gen_z_fn = [2 ** (n + 6) for n in range(self.gen_z_ls - 1)] + [
+            self.nz_global]
+
+        ## gives back the correct data iterator given class variables --
     ## this way we avoid the python restriction not to pickle iterator objects
     def data_iter(self, texture_path, batch_size):
         return get_texture_iter(texture_path, npx=self.npx,

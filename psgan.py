@@ -589,7 +589,7 @@ class InversePSGAN(PSGAN):
         vals = {}
         vals["config"] = self.config
         # vals["dis_W"] = [(p.get_value() for p in self.dis_W[0])]
-        # vals["dis_W"] += [p.get_value() for p in self.dis_W[1:]]
+        vals["dis_W"] = [p.get_value() for p in self.dis_W[1:]]
         vals["dis_g"] = [p.get_value() for p in self.dis_g]
         vals["dis_b"] = [p.get_value() for p in self.dis_b]
 

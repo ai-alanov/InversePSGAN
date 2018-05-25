@@ -588,27 +588,27 @@ class InversePSGAN(PSGAN):
         logger.info("saving InversePSGAN parameters in file: {}".format(name))
         vals = {}
         vals["config"] = self.config
-        vals["dis_W"] = [(p.get_value() for p in self.dis_W[0])]
-        vals["dis_W"] += [p.get_value() for p in self.dis_W[1:]]
-        # vals["dis_g"] = [p.get_value() for p in self.dis_g]
-        # vals["dis_b"] = [p.get_value() for p in self.dis_b]
-        #
-        # vals["gen_W"] = [p.get_value() for p in self.gen_W]
-        # vals["gen_g"] = [p.get_value() for p in self.gen_g]
-        # vals["gen_b"] = [p.get_value() for p in self.gen_b]
-        #
-        # vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
-        # vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]
-        # vals["gen_z_b"] = [p.get_value() for p in self.gen_z_b]
-        # vals["transform_z_W"] = [self.transform_z_W.get_value()]
-        #
-        # vals["wave_params"] = [p.get_value() for p in self.wave_params]
-        #
-        # vals["means"] = [p.get_value() for p in self.means]
-        # vals["inv_stds"] = [p.get_value() for p in self.inv_stds]
-        #
-        # vals["means_z"] = [p.get_value() for p in self.means_z]
-        # vals["inv_stds_z"] = [p.get_value() for p in self.inv_stds_z]
+        # vals["dis_W"] = [(p.get_value() for p in self.dis_W[0])]
+        # vals["dis_W"] += [p.get_value() for p in self.dis_W[1:]]
+        vals["dis_g"] = [p.get_value() for p in self.dis_g]
+        vals["dis_b"] = [p.get_value() for p in self.dis_b]
+
+        vals["gen_W"] = [p.get_value() for p in self.gen_W]
+        vals["gen_g"] = [p.get_value() for p in self.gen_g]
+        vals["gen_b"] = [p.get_value() for p in self.gen_b]
+
+        vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
+        vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]
+        vals["gen_z_b"] = [p.get_value() for p in self.gen_z_b]
+        vals["transform_z_W"] = [self.transform_z_W.get_value()]
+
+        vals["wave_params"] = [p.get_value() for p in self.wave_params]
+
+        vals["means"] = [p.get_value() for p in self.means]
+        vals["inv_stds"] = [p.get_value() for p in self.inv_stds]
+
+        vals["means_z"] = [p.get_value() for p in self.means_z]
+        vals["inv_stds_z"] = [p.get_value() for p in self.inv_stds_z]
 
         joblib.dump(vals, name, True)
 

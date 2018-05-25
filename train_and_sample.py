@@ -86,10 +86,9 @@ def sample(model, config, samples_dir, texture_path,
                 -1., 1., (1, config.nz_global, 1, 1))
         z_samples = utils.sample_noise_tensor(config, 5, config.zx,
                                               global_noise=global_noise)
-        gen_samples = []
+        gen_samples = model.generate_det(z_samples)
         if inverse:
-            gen_samples += [imgs[i]]
-        gen_samples += model.generate_det(z_samples)
+            gen_samples = np.concatenate([imgs[i], gen_samples], axis=0)
         gen_samples = np.concatenate(gen_samples, axis=2)
         all_samples.append(gen_samples)
     utils.save_samples(samples_dir, all_samples,

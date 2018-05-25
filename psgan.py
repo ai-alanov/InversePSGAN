@@ -280,7 +280,7 @@ class PSGAN(object):
                                          self.config.lr, self.config.b1)
         updates_g = lasagne.updates.adam(obj_g, params_g,
                                          self.config.lr, self.config.b1)
-
+        print type(self)
         logger = utils.create_logger('run_psgan.psgan_build', stream=sys.stdout)
         logger.info("Compiling the network...")
         self.train_d = theano.function(
@@ -600,7 +600,7 @@ class InversePSGAN(PSGAN):
         vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
         vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]
         vals["gen_z_b"] = [p.get_value() for p in self.gen_z_b]
-        vals["transform_z_W"] = [self.transform_z_W.get_value()]
+        #vals["transform_z_W"] = [self.transform_z_W.get_value()]
 
         vals["wave_params"] = [p.get_value() for p in self.wave_params]
 

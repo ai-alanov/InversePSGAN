@@ -661,14 +661,14 @@ class InversePSGAN(PSGAN):
         self.config.nc = vals["gen_W"][i].shape[1]
         self.config.gen_fn += [self.config.nc]
 
-        self.config.dis_ks = []
-        self.config.dis_fn = []
-        l = len(vals["dis_W"])
-        for i in range(l):
-            if i == 0:
-                pass
-            else:
-                self.config.dis_fn += [vals["dis_W"][i].shape[1]]
-            self.config.dis_ks += [(vals["gen_W"][i].shape[2],
-                                    vals["gen_W"][i].shape[3])]
-        self.config.dis_fn += [1]
+        # self.config.dis_ks = []
+        # self.config.dis_fn = []
+        # l = len(vals["dis_W"])
+        # for i in range(l):
+        #     if i == 0:
+        #         pass
+        #     else:
+        #         self.config.dis_fn += [vals["dis_W"][i].shape[1]]
+        #     self.config.dis_ks += [(vals["gen_W"][i].shape[2],
+        #                             vals["gen_W"][i].shape[3])]
+        # self.config.dis_fn += [1]

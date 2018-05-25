@@ -255,33 +255,38 @@ class PSGAN(object):
 
         self.gen_X = self._spatial_generator(self.Z)
         self.gen_X_det = self._spatial_generator_det(self.Z)
-        d_real = self.__spatial_discriminator(self.X)
-        d_fake = self.__spatial_discriminator(self.gen_X)
 
         self.prediction_gen = lasagne.layers.get_output(self.gen_X)
         self.prediction_gen_det = lasagne.layers.get_output(self.gen_X_det,
                                                             deterministic=True)
-        prediction_real = lasagne.layers.get_output(d_real)
-        prediction_fake = lasagne.layers.get_output(d_fake)
 
-        params_g = lasagne.layers.get_all_params(self.gen_X, trainable=True)
-        params_d = lasagne.layers.get_all_params(d_real, trainable=True)
-
-        l2_gen = lasagne.regularization.regularize_network_params(
-            self.gen_X, lasagne.regularization.l2)
-        l2_dis = lasagne.regularization.regularize_network_params(
-            d_real, lasagne.regularization.l2)
-
-        obj_d= -T.mean(T.log(1-prediction_fake)) \
-               - T.mean( T.log(prediction_real)) + self.config.l2_fac * l2_dis
-        obj_g= -T.mean(T.log(prediction_fake)) + self.config.l2_fac * l2_gen
-
-        updates_d = lasagne.updates.adam(obj_d, params_d,
-                                         self.config.lr, self.config.b1)
-        updates_g = lasagne.updates.adam(obj_g, params_g,
-                                         self.config.lr, self.config.b1)
         if not isinstance(self, InversePSGAN):
-            logger = utils.create_logger('run_psgan.psgan_build', stream=sys.stdout)
+            d_real = self.__spatial_discriminator(self.X)
+            d_fake = self.__spatial_discriminator(self.gen_X)
+
+            prediction_real = lasagne.layers.get_output(d_real)
+            prediction_fake = lasagne.layers.get_output(d_fake)
+
+            params_g = lasagne.layers.get_all_params(self.gen_X, trainable=True)
+            params_d = lasagne.layers.get_all_params(d_real, trainable=True)
+
+            l2_gen = lasagne.regularization.regularize_network_params(
+                self.gen_X, lasagne.regularization.l2)
+            l2_dis = lasagne.regularization.regularize_network_params(
+                d_real, lasagne.regularization.l2)
+
+            obj_d= -T.mean(T.log(1-prediction_fake)) \
+                   - T.mean( T.log(prediction_real)) \
+                   + self.config.l2_fac * l2_dis
+            obj_g= -T.mean(T.log(prediction_fake)) + self.config.l2_fac * l2_gen
+
+            updates_d = lasagne.updates.adam(obj_d, params_d,
+                                             self.config.lr, self.config.b1)
+            updates_g = lasagne.updates.adam(obj_g, params_g,
+                                             self.config.lr, self.config.b1)
+
+            logger = utils.create_logger('run_psgan.psgan_build',
+                                         stream=sys.stdout)
             logger.info("Compiling the network...")
             self.train_d = theano.function(
                 [self.X.input_var, self.Z.input_var], obj_d,

@@ -374,7 +374,8 @@ class InversePSGAN(PSGAN):
 
         self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
 
-        self._sample_initials()
+        if name is None:
+            self._sample_initials()
 
         self._build_sgan()
 

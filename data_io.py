@@ -22,6 +22,17 @@ def tensor_to_image(tensor):
     img = np.array(tensor).transpose( (1,2,0) )
     img = (img + 1.)/2 * 255.
     return np.uint8(img)
+
+
+def get_images(img_files):
+    imgs = []
+    for file in img_files:
+        try:
+            img = Image.open(file)
+            imgs += [image_to_tensor(img)]
+        except:
+            print "Image ", file, " failed to load!"
+    return imgs
     
 
 def get_texture_iter(texture_path, npx=128, batch_size=64, mirror=False):

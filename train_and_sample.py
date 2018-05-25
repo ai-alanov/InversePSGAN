@@ -4,6 +4,7 @@ import sys
 from tqdm import tqdm
 
 import utils
+from data_io import get_images
 
 np.random.seed(1234)
 
@@ -64,7 +65,8 @@ def sample(model, config, samples_dir, texture_path,
 
     imgs = None
     if inverse:
-        imgs = sorted(os.listdir(texture_path))[:n_samples]
+        img_files = sorted(os.listdir(texture_path))[:n_samples]
+        imgs = get_images(img_files)
     all_samples = []
     for i in range(n_samples):
         if inverse:

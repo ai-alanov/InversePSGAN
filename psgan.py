@@ -448,6 +448,8 @@ class InversePSGAN(PSGAN):
         output = conv(layers[-1], self.gen_z_fn[-1], self.gen_z_ks[-1],
                       self.gen_z_W[-1], None, nonlinearity=tanh)
         output = lasagne.layers.Pool2DLayer(output, self.config.zx, mode='mean')
+        output = lasagne.layers.ReshapeLayer(
+            output, (-1, self.config.nz_global, 1, 1))
         if not hasattr(self, 'means_z'):
             self.means_z = means_z
             self.inv_stds_z = inv_stds_z

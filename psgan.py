@@ -466,7 +466,9 @@ class InversePSGAN(PSGAN):
                 gamma=self.gen_z_g[l - 1], beta=self.gen_z_b[l - 1],
                 mean=self.means_z[l - 1], inv_std=self.inv_stds_z[l - 1]))
         output = conv(layers[-1], self.gen_z_fn[-1], self.gen_z_ks[-1],
-                      self.gen_z_W[-1], None, nonlinearity=tanh, stride=6)
+                      self.gen_z_W[-1], None, nonlinearity=tanh, stride=1)
+        output = lasagne.layers.Pool2DLayer(output, self.config.zx,
+                                            mode='average_inc_pad')
 
         return output
 

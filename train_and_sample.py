@@ -58,15 +58,26 @@ def train(model, config, logger, options, model_dir, samples_dir, inverse=False)
             model.save(os.path.join(model_dir, model_file))
 
 
-def sample(model, config, samples_dir, n_samples=5):
+def sample(model, config, samples_dir, texture_path,
+           n_samples=5, inverse=False):
     utils.makedirs(samples_dir)
 
+    imgs = None
+    if inverse:
+        imgs = sorted(os.listdir(texture_path))[:n_samples]
     all_samples = []
     for i in range(n_samples):
-        global_noise = np.random.uniform(-1., 1., (1, config.nz_global, 1, 1))
+        if inverse:
+            global_noise = model.generate_z_det(imgs[i])
+        else:
+            global_noise = np.random.uniform(
+                -1., 1., (1, config.nz_global, 1, 1))
         z_samples = utils.sample_noise_tensor(config, 5, config.zx,
                                               global_noise=global_noise)
-        gen_samples = model.generate_det(z_samples)
+        gen_samples = []
+        if inverse:
+            gen_samples += [imgs[i]]
+        gen_samples += model.generate_det(z_samples)
         gen_samples = np.concatenate(gen_samples, axis=2)
         all_samples.append(gen_samples)
     utils.save_samples(samples_dir, all_samples,

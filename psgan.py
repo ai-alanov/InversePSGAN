@@ -588,8 +588,8 @@ class InversePSGAN(PSGAN):
         logger.info("saving InversePSGAN parameters in file: {}".format(name))
         vals = {}
         vals["config"] = self.config
-        # vals["dis_W"] = [(p.get_value() for p in self.dis_W[0])]
-        vals["dis_W"] = [p.get_value() for p in self.dis_W[1:]]
+        vals["dis_W"] = [tuple([p.get_value() for p in self.dis_W[0]])]
+        vals["dis_W"] += [p.get_value() for p in self.dis_W[1:]]
         vals["dis_g"] = [p.get_value() for p in self.dis_g]
         vals["dis_b"] = [p.get_value() for p in self.dis_b]
 
@@ -620,7 +620,7 @@ class InversePSGAN(PSGAN):
         vals = joblib.load(name)
         self.config = vals["config"]
 
-        self.dis_W = [(sharedX(p) for p in vals["dis_W"][0])]
+        self.dis_W = [tuple([sharedX(p) for p in vals["dis_W"][0]])]
         self.dis_W += [sharedX(p) for p in vals["dis_W"][1:]]
         self.dis_g = [sharedX(p) for p in vals["dis_g"]]
         self.dis_b = [sharedX(p) for p in vals["dis_b"]]

@@ -280,24 +280,24 @@ class PSGAN(object):
                                          self.config.lr, self.config.b1)
         updates_g = lasagne.updates.adam(obj_g, params_g,
                                          self.config.lr, self.config.b1)
-        print type(self)
-        logger = utils.create_logger('run_psgan.psgan_build', stream=sys.stdout)
-        logger.info("Compiling the network...")
-        self.train_d = theano.function(
-            [self.X.input_var, self.Z.input_var], obj_d,
-            updates=updates_d, allow_input_downcast=True)
-        logger.info("Discriminator done.")
-        self.train_g = theano.function(
-            [self.Z.input_var], obj_g, updates=updates_g,
-            allow_input_downcast=True)
-        logger.info("Generator done.")
-        self.generate = theano.function(
-            [self.Z.input_var], self.prediction_gen,
-            allow_input_downcast=True)
-        self.generate_det = theano.function(
-            [self.Z.input_var], self.prediction_gen_det,
-            allow_input_downcast=True)
-        logger.info("generate function done.")
+        if not isinstance(self, InversePSGAN):
+            logger = utils.create_logger('run_psgan.psgan_build', stream=sys.stdout)
+            logger.info("Compiling the network...")
+            self.train_d = theano.function(
+                [self.X.input_var, self.Z.input_var], obj_d,
+                updates=updates_d, allow_input_downcast=True)
+            logger.info("Discriminator done.")
+            self.train_g = theano.function(
+                [self.Z.input_var], obj_g, updates=updates_g,
+                allow_input_downcast=True)
+            logger.info("Generator done.")
+            self.generate = theano.function(
+                [self.Z.input_var], self.prediction_gen,
+                allow_input_downcast=True)
+            self.generate_det = theano.function(
+                [self.Z.input_var], self.prediction_gen_det,
+                allow_input_downcast=True)
+            logger.info("generate function done.")
 
     def save(self, name):
         logger = logging.getLogger('run_psgan.psgan_save')
@@ -590,25 +590,25 @@ class InversePSGAN(PSGAN):
         vals["config"] = self.config
         vals["dis_W"] = [(p.get_value() for p in self.dis_W[0])]
         vals["dis_W"] += [p.get_value() for p in self.dis_W[1:]]
-        vals["dis_g"] = [p.get_value() for p in self.dis_g]
-        vals["dis_b"] = [p.get_value() for p in self.dis_b]
-
-        vals["gen_W"] = [p.get_value() for p in self.gen_W]
-        vals["gen_g"] = [p.get_value() for p in self.gen_g]
-        vals["gen_b"] = [p.get_value() for p in self.gen_b]
-
-        vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
-        vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]
-        vals["gen_z_b"] = [p.get_value() for p in self.gen_z_b]
-        #vals["transform_z_W"] = [self.transform_z_W.get_value()]
-
-        vals["wave_params"] = [p.get_value() for p in self.wave_params]
-
-        vals["means"] = [p.get_value() for p in self.means]
-        vals["inv_stds"] = [p.get_value() for p in self.inv_stds]
-
-        vals["means_z"] = [p.get_value() for p in self.means_z]
-        vals["inv_stds_z"] = [p.get_value() for p in self.inv_stds_z]
+        # vals["dis_g"] = [p.get_value() for p in self.dis_g]
+        # vals["dis_b"] = [p.get_value() for p in self.dis_b]
+        #
+        # vals["gen_W"] = [p.get_value() for p in self.gen_W]
+        # vals["gen_g"] = [p.get_value() for p in self.gen_g]
+        # vals["gen_b"] = [p.get_value() for p in self.gen_b]
+        #
+        # vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
+        # vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]
+        # vals["gen_z_b"] = [p.get_value() for p in self.gen_z_b]
+        # vals["transform_z_W"] = [self.transform_z_W.get_value()]
+        #
+        # vals["wave_params"] = [p.get_value() for p in self.wave_params]
+        #
+        # vals["means"] = [p.get_value() for p in self.means]
+        # vals["inv_stds"] = [p.get_value() for p in self.inv_stds]
+        #
+        # vals["means_z"] = [p.get_value() for p in self.means_z]
+        # vals["inv_stds_z"] = [p.get_value() for p in self.inv_stds_z]
 
         joblib.dump(vals, name, True)
 

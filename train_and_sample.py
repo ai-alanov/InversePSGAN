@@ -68,6 +68,7 @@ def sample(model, config, samples_dir, texture_path,
         img_files = sorted(os.listdir(texture_path))[:n_samples]
         img_files = [texture_path + file for file in img_files]
         imgs = get_images(img_files)
+        imgs = [np.reshape(img, (1,) + img.shape) for img in imgs]
     all_samples = []
     for i in range(n_samples):
         if inverse:

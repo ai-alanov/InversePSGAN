@@ -600,7 +600,7 @@ class InversePSGAN(PSGAN):
         vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
         vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]
         vals["gen_z_b"] = [p.get_value() for p in self.gen_z_b]
-        vals["transform_z_W"] = self.transform_z_W.get_value()
+        vals["transform_z_W"] = [self.transform_z_W.get_value()]
 
         vals["wave_params"] = [p.get_value() for p in self.wave_params]
 
@@ -632,7 +632,7 @@ class InversePSGAN(PSGAN):
         self.gen_z_W = [sharedX(p) for p in vals["gen_z_W"]]
         self.gen_z_g = [sharedX(p) for p in vals["gen_z_g"]]
         self.gen_z_b = [sharedX(p) for p in vals["gen_z_b"]]
-        self.transform_z_W = sharedX(vals["transform_z_W"])
+        self.transform_z_W = sharedX(vals["transform_z_W"][0])
 
         self.wave_params = [sharedX(p) for p in vals["wave_params"]]
 

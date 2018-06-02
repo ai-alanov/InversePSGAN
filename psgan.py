@@ -256,16 +256,16 @@ class PSGAN(object):
         self.gen_X = self._spatial_generator(self.Z)
         self.gen_X_det = self._spatial_generator_det(self.Z)
 
-        self.prediction_gen = lasagne.layers.get_output(self.gen_X)
-        self.prediction_gen_det = lasagne.layers.get_output(self.gen_X_det,
-                                                            deterministic=True)
+        self.pred_gen = lasagne.layers.get_output(self.gen_X)
+        self.pred_gen_det = lasagne.layers.get_output(self.gen_X_det,
+                                                      deterministic=True)
 
         if not isinstance(self, InversePSGAN):
             d_real = self.__spatial_discriminator(self.X)
             d_fake = self.__spatial_discriminator(self.gen_X)
 
-            prediction_real = lasagne.layers.get_output(d_real)
-            prediction_fake = lasagne.layers.get_output(d_fake)
+            pred_real = lasagne.layers.get_output(d_real)
+            pred_fake = lasagne.layers.get_output(d_fake)
 
             params_g = lasagne.layers.get_all_params(self.gen_X, trainable=True)
             params_d = lasagne.layers.get_all_params(d_real, trainable=True)
@@ -275,10 +275,9 @@ class PSGAN(object):
             l2_dis = lasagne.regularization.regularize_network_params(
                 d_real, lasagne.regularization.l2)
 
-            obj_d= -T.mean(T.log(1-prediction_fake)) \
-                   - T.mean( T.log(prediction_real)) \
+            obj_d= -T.mean(T.log(1-pred_fake)) - T.mean( T.log(pred_real)) \
                    + self.config.l2_fac * l2_dis
-            obj_g= -T.mean(T.log(prediction_fake)) + self.config.l2_fac * l2_gen
+            obj_g= -T.mean(T.log(pred_fake)) + self.config.l2_fac * l2_gen
 
             updates_d = lasagne.updates.adam(obj_d, params_d,
                                              self.config.lr, self.config.b1)
@@ -297,10 +296,10 @@ class PSGAN(object):
                 allow_input_downcast=True)
             logger.info("Generator done.")
             self.generate = theano.function(
-                [self.Z.input_var], self.prediction_gen,
+                [self.Z.input_var], self.pred_gen,
                 allow_input_downcast=True)
             self.generate_det = theano.function(
-                [self.Z.input_var], self.prediction_gen_det,
+                [self.Z.input_var], self.pred_gen_det,
                 allow_input_downcast=True)
             logger.info("generate function done.")
 
@@ -507,9 +506,13 @@ class InversePSGAN(PSGAN):
     def _build_sgan(self):
         self.Z_global = lasagne.layers.InputLayer(
             (None, self.config.nz_global, None, None))
+        self.z_g = lasagne.layers.get_output(self.Z_global)
 
         self.gen_Z = self._spatial_generator_Z(self.X)
         self.gen_Z_det = self._spatial_generator_Z_det(self.X)
+
+        self.Z_g_reconst = self._spatial_generator_Z(
+            theano.gradient.disconnected_grad(self.gen_X))
 
         Z_transformed = self._transform_Z(self.Z_global)
         d_fake, X_Z_fake = self._spatial_discriminator(
@@ -519,16 +522,18 @@ class InversePSGAN(PSGAN):
         d_real, X_Z_real = self._spatial_discriminator(
             self.X, gen_Z_transformed)
 
-        self.prediction_gen_z = lasagne.layers.get_output(self.gen_Z)
-        self.prediction_gen_z_det = lasagne.layers.get_output(
+        self.pred_gen_z = lasagne.layers.get_output(self.gen_Z)
+        self.pred_gen_z_det = lasagne.layers.get_output(
             self.gen_Z_det, deterministic=True)
 
-        prediction_z_transformed = lasagne.layers.get_output(Z_transformed)
-        prediction_gen_z_transformed = lasagne.layers.get_output(
+        self.pred_z_g_reconst = lasagne.layers.get_output(self.Z_g_reconst)
+
+        pred_z_transformed = lasagne.layers.get_output(Z_transformed)
+        pred_gen_z_transformed = lasagne.layers.get_output(
             gen_Z_transformed)
 
-        prediction_real = lasagne.layers.get_output(d_real)
-        prediction_fake = lasagne.layers.get_output(d_fake)
+        pred_real = lasagne.layers.get_output(d_real)
+        pred_fake = lasagne.layers.get_output(d_fake)
 
         params_g = lasagne.layers.get_all_params(self.gen_X, trainable=True)
         params_g += lasagne.layers.get_all_params(gen_Z_transformed,
@@ -544,13 +549,17 @@ class InversePSGAN(PSGAN):
         l2_dis = lasagne.regularization.apply_penalty(
             list(self.dis_W[0]) + self.dis_W[1:], lasagne.regularization.l2)
 
-        obj_d = -T.mean(T.log(1 - prediction_fake)) - T.mean(
-            T.log(prediction_real))
+        z_reconst_loss = T.mean((self.z_g - self.pred_z_g_reconst)**2)
+
+        obj_d = -T.mean(T.log(1 - pred_fake)) - T.mean(
+            T.log(pred_real))
         obj_d += self.config.l2_fac * l2_dis
 
-        obj_g = -T.mean(T.log(prediction_fake)) - T.mean(
-            T.log(1 - prediction_real))
+        obj_g = -T.mean(T.log(pred_fake)) - T.mean(
+            T.log(1 - pred_real))
         obj_g += self.config.l2_fac * l2_gen + self.config.l2_fac * l2_gen_z
+        obj_g += self.config.z_reconst_fac * z_reconst_loss
+
 
         updates_d = lasagne.updates.adam(obj_d, params_d, self.config.lr,
                                          self.config.b1)
@@ -564,13 +573,13 @@ class InversePSGAN(PSGAN):
         #                                     lasagne.layers.get_output(X_Z_fake),
         #                                     allow_input_downcast=True)
         # self.compute_d_fake = theano.function([Z.input_var, Z_global.input_var],
-        #                                       prediction_fake,
+        #                                       pred_fake,
         #                                       allow_input_downcast=True)
         # self.generate_z_transf = theano.function([Z_global.input_var],
-        #                                          prediction_z_transformed,
+        #                                          pred_z_transformed,
         #                                          allow_input_downcast=True)
         # self.generate_gen_z_transf = theano.function([X.input_var],
-        #                                              prediction_gen_z_transformed,
+        #                                              pred_gen_z_transformed,
         #                                              allow_input_downcast=True)
         self.train_d = theano.function(
             [self.X.input_var, self.Z.input_var, self.Z_global.input_var],
@@ -581,15 +590,15 @@ class InversePSGAN(PSGAN):
             obj_g, updates=updates_g, allow_input_downcast=True)
         logger.info("Generator done.")
         self.generate = theano.function(
-            [self.Z.input_var], self.prediction_gen, allow_input_downcast=True)
+            [self.Z.input_var], self.pred_gen, allow_input_downcast=True)
         self.generate_det = theano.function(
-            [self.Z.input_var], self.prediction_gen_det,
+            [self.Z.input_var], self.pred_gen_det,
             allow_input_downcast=True)
         self.generate_z = theano.function(
-            [self.X.input_var], self.prediction_gen_z,
+            [self.X.input_var], self.pred_gen_z,
             allow_input_downcast=True)
         self.generate_z_det = theano.function(
-            [self.X.input_var], self.prediction_gen_z_det,
+            [self.X.input_var], self.pred_gen_z_det,
             allow_input_downcast=True)
         logger.info("generate function done.")
 

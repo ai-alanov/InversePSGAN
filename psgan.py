@@ -511,8 +511,9 @@ class InversePSGAN(PSGAN):
         self.gen_Z = self._spatial_generator_Z(self.X)
         self.gen_Z_det = self._spatial_generator_Z_det(self.X)
 
-        self.Z_g_reconst = self._spatial_generator_Z(
-            theano.gradient.disconnected_grad(self.gen_X))
+        # self.Z_g_reconst = self._spatial_generator_Z(
+        #     theano.gradient.disconnected_grad(self.gen_X))
+        self.Z_g_reconst = self._spatial_generator_Z(self.gen_X)
 
         Z_transformed = self._transform_Z(self.Z_global)
         d_fake, X_Z_fake = self._spatial_discriminator(

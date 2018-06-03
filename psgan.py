@@ -297,24 +297,25 @@ class PSGAN(object):
                 self.obj_g, params_g, self.config.lr, self.config.b1)
 
     def __compile_network(self):
-        logger = utils.create_logger('run_psgan.psgan_compile',
-                                     stream=sys.stdout)
-        logger.info("Compiling the network...")
-        self.train_d = theano.function(
-            [self.X.input_var, self.Z.input_var], self.obj_d,
-            updates=self.updates_d, allow_input_downcast=True)
-        logger.info("Discriminator done.")
-        self.train_g = theano.function(
-            [self.Z.input_var], self.obj_g, updates=self.updates_g,
-            allow_input_downcast=True)
-        logger.info("Generator done.")
-        self.generate = theano.function(
-            [self.Z.input_var], self.gen_X_out,
-            allow_input_downcast=True)
-        self.generate_det = theano.function(
-            [self.Z.input_var], self.gen_X_det_out,
-            allow_input_downcast=True)
-        logger.info("generate function done.")
+        if not isinstance(self, InversePSGAN):
+            logger = utils.create_logger('run_psgan.psgan_compile',
+                                         stream=sys.stdout)
+            logger.info("Compiling the network...")
+            self.train_d = theano.function(
+                [self.X.input_var, self.Z.input_var], self.obj_d,
+                updates=self.updates_d, allow_input_downcast=True)
+            logger.info("Discriminator done.")
+            self.train_g = theano.function(
+                [self.Z.input_var], self.obj_g, updates=self.updates_g,
+                allow_input_downcast=True)
+            logger.info("Generator done.")
+            self.generate = theano.function(
+                [self.Z.input_var], self.gen_X_out,
+                allow_input_downcast=True)
+            self.generate_det = theano.function(
+                [self.Z.input_var], self.gen_X_det_out,
+                allow_input_downcast=True)
+            logger.info("generate function done.")
 
     # def __build_sgan(self):
     #     self.Z = lasagne.layers.InputLayer((None, self.config.nz, None, None))

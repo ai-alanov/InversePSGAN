@@ -17,7 +17,7 @@ def main():
                       help="use PSGAN or InversePSGAN")
     parser.add_option("--checkpoint", type='string', default=None,
                       help="load a model from checkpoint, format: \'Y-m-d.id\'")
-    parser.add_option("--data", type='string', default='texture',
+    parser.add_option("--data", type='string',
                       help="path to data for training")
     parser.add_option("--n_epochs", type='int', default=60,
                       help="how many epochs to do globally")
@@ -25,8 +25,6 @@ def main():
                       help="steps inside one epoch")
     parser.add_option("--b_size", type='int', default=25,
                       help="batch size")
-    parser.add_option("--t_path", type='string',
-                      help="path to texture for train")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -51,7 +49,7 @@ def main():
     elif options.mode == 'sample':
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
         sample(psgan, psgan.config, samples_dir,
-               options.t_path, inverse=options.is_inverse)
+               options.data, inverse=options.is_inverse)
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ def train(model, config, logger, options, model_dir, samples_dir, inverse=False)
         Gcost = []
         Dcost = []
 
-        samples_generator = config.data_iter(options.t_path, options.b_size)
+        samples_generator = config.data_iter(options.data, options.b_size)
 
         for it in tqdm(range(options.n_iters), file=sys.stdout):
             Z_global = None

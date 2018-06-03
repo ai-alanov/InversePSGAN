@@ -60,7 +60,7 @@ def train(model, config, logger, options, model_dir, samples_dir, inverse=False)
 
 
 def sample(model, config, samples_dir, texture_path,
-           n_samples=5, inverse=False):
+           n_samples=20, inverse=False):
     utils.makedirs(samples_dir)
 
     imgs = None

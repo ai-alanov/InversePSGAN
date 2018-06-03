@@ -55,7 +55,7 @@ def train(model, config, logger, options, model_dir, samples_dir, inverse=False)
         utils.save_samples(samples_dir, [X_samples, gen_samples, large_sample],
                            ['real', 'gen', 'large'], epoch=epoch)
         if (epoch+1) % 10 == 0:
-            model_file = 'epoch_{}.model'.format(epoch)
+            model_file = 'epoch_{:04d}.model'.format(epoch)
             model.save(os.path.join(model_dir, model_file))
 
 

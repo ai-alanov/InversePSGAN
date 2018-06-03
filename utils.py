@@ -115,13 +115,11 @@ def copy_stream_to_log(stream, stream_name, file):
 
 def save_samples(save_dir, samples, names, epoch=None):
     if epoch is not None:
-        save_dir = os.path.join(save_dir, 'epoch_{}'.format(epoch))
+        save_dir = os.path.join(save_dir, 'epoch_{:04d}'.format(epoch))
         makedirs(save_dir)
 
     for name, sample in zip(names, samples):
-        sample_file = '{}{}.jpg'.format(
-            name, '_epoch_{:04d}'.format(epoch) if epoch is not None else '')
-        print(sample_file)
+        sample_file = '{}.jpg'.format(name)
         sample_file = os.path.join(save_dir, sample_file)
         save_tensor(sample, sample_file)
 

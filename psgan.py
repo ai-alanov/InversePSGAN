@@ -9,6 +9,7 @@ from lasagne.layers import TransposedConv2DLayer
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
+from theano.gradient import disconnected_grad as zero_grad
 
 import numpy as np
 import sys
@@ -198,21 +199,27 @@ class PSGAN(object):
         self.gen_W += [sharedX(self.w_init.sample(
             (last,self.gen_fn[-1], self.gen_ks[-1][0],self.gen_ks[-1][1])))]
 
-    def _spatial_generator(self, inlayer):
+    def _spatial_generator(self, inlayer, is_const=False):
+        params = [self.wave_params, self.gen_W, self.gen_g, self.gen_b]
+        if is_const:
+            for i, p in enumerate(params):
+                params[i] = [zero_grad(w) for w in p]
+        wave_params, gen_W, gen_g, gen_b = params
+
         layers = [inlayer]
-        layers.append(periodic(inlayer, self.config, self.wave_params))
+        layers.append(periodic(inlayer, self.config, wave_params))
 
         means = []
         inv_stds = []
         for l in range(self.gen_depth - 1):
             layers.append(batch_norm(
                 tconv(layers[-1], self.gen_fn[l], self.gen_ks[l],
-                      self.gen_W[l], nonlinearity=relu),
-                gamma=self.gen_g[l], beta=self.gen_b[l], alpha=1.0))
+                      gen_W[l], nonlinearity=relu),
+                gamma=gen_g[l], beta=gen_b[l], alpha=1.0))
             means += [layers[-1].input_layer.mean]
             inv_stds += [layers[-1].input_layer.inv_std]
         output  = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
-                        self.gen_W[-1], nonlinearity=tanh)
+                        gen_W[-1], nonlinearity=tanh)
         if not hasattr(self, 'means'):
             self.means = means
             self.inv_stds = inv_stds
@@ -513,7 +520,8 @@ class InversePSGAN(PSGAN):
 
         # self.Z_g_reconst = self._spatial_generator_Z(
         #     theano.gradient.disconnected_grad(self.gen_X))
-        self.Z_g_reconst = self._spatial_generator_Z(self.gen_X)
+        gen_X_const = self._spatial_generator(self.Z, is_const=True)
+        self.Z_g_reconst = self._spatial_generator_Z(gen_X_const)
 
         Z_transformed = self._transform_Z(self.Z_global)
         d_fake, X_Z_fake = self._spatial_discriminator(

@@ -569,7 +569,7 @@ class InversePSGAN(PSGAN):
         l2_d = lasagne.regularization.apply_penalty(
             list(self.dis_W[0]) + self.dis_W[1:], lasagne.regularization.l2)
         z_reconst_loss = T.mean((self.Z_global_out - self.Z_g_reconst_out)**2)
-        x_reconst_loss = T.mean((self.X_out - self.X_reconst_out)**2)
+        self.x_reconst_loss = T.mean((self.X_out - self.X_reconst_out)**2)
 
         self.obj_d = -T.mean(T.log(1 - d_fake_out)) \
                      - T.mean(T.log(d_real_out)) \
@@ -578,7 +578,7 @@ class InversePSGAN(PSGAN):
                      - T.mean(T.log(1 - d_real_out)) \
                      + self.config.l2_fac * l2_g + self.config.l2_fac * l2_g_z \
                      + self.config.z_reconst_fac * z_reconst_loss \
-                     + self.config.x_reconst_fac * x_reconst_loss
+                     + self.config.x_reconst_fac * self.x_reconst_loss
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)
         self.updates_g = lasagne.updates.adam(

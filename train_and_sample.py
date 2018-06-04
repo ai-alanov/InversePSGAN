@@ -89,6 +89,7 @@ def sample(model, config, samples_dir, texture_path,
             all_samples.append(gen_samples)
         all_samples = [np.concatenate(all_samples, axis=1)]
         utils.save_samples(samples_dir, all_samples, ['inv_gens'])
+        all_samples = []
     for i in range(n_samples):
         global_noise = np.random.uniform(-1., 1., (1, config.nz_global, 1, 1))
         z_samples = utils.sample_noise_tensor(config, 5, config.zx,

@@ -381,7 +381,7 @@ class PSGAN(object):
 
 class InversePSGAN(PSGAN):
 
-    def __init__(self, name=None, **kwargs):
+    def __init__(self, name=None, compile=True, **kwargs):
         super(InversePSGAN, self).__init__(name, **kwargs)
 
         self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
@@ -391,7 +391,8 @@ class InversePSGAN(PSGAN):
 
         self._build_network()
         self._build_obj()
-        self._compile_network()
+        if compile:
+            self._compile_network()
 
     def _setup_gen_z_params(self, gen_z_ks, gen_z_fn):
         if gen_z_ks == None:

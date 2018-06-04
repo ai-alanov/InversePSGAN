@@ -521,7 +521,7 @@ class InversePSGAN(PSGAN):
     def _build_network(self):
         self.Z_global = lasagne.layers.InputLayer((None, self.config.nz_global,
                                                    None, None))
-        self.Z_loc_and_period = lasagne.layers.ScaleLayer(
+        self.Z_loc_and_period = lasagne.layers.SliceLayer(
             self.Z, indices=slice(self.config.nz_global, None), axis=1)
 
         self.gen_Z = self._spatial_generator_Z(self.X)

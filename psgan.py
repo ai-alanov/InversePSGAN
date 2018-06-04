@@ -559,7 +559,7 @@ class InversePSGAN(PSGAN):
         d_fake_out = get_output(self.d_fake)
 
         params_g = get_all_params(self.gen_X, trainable=True)
-        params_g += get_all_params(self.gen_Z_transformed, deterministic=True)
+        params_g += get_all_params(self.gen_Z_transformed, trainable=True)
         params_d = list(self.dis_W[0]) + self.dis_W[1:] \
                    + self.dis_b + self.dis_g
         l2_g = regularize_network_params(self.gen_X,

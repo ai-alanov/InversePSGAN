@@ -91,5 +91,5 @@ def sample(model, config, samples_dir, texture_path,
             gen_samples = np.concatenate([imgs[i], gen_samples], axis=0)
         gen_samples = np.concatenate(gen_samples, axis=2)
         all_samples.append(gen_samples)
-    utils.save_samples(samples_dir, all_samples,
-                       [str(i+1) for i in range(n_samples)])
+    all_samples = [np.concatenate(all_samples, axis=3)]
+    utils.save_samples(samples_dir, all_samples, ['gens'])

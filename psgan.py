@@ -95,11 +95,11 @@ periodic = lambda incoming, config, wave_params: \
 
 class PSGAN(object):
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, **kwargs):
         if name is not None:
             self.load(name)
         else:
-            self.config = Config()
+            self.config = Config(**kwargs)
 
         self._setup_gen_params(self.config.gen_ks, self.config.gen_fn)
         self._setup_dis_params(self.config.dis_ks, self.config.dis_fn)
@@ -108,7 +108,6 @@ class PSGAN(object):
             self.__sample_initials()
             self._setup_wave_params()
 
-        # self.__build_sgan()
         self.__build_network()
         self.__build_obj()
         self.__compile_network()
@@ -317,61 +316,6 @@ class PSGAN(object):
                 allow_input_downcast=True)
             logger.info("generate function done.")
 
-    # def __build_sgan(self):
-    #     self.Z = lasagne.layers.InputLayer((None, self.config.nz, None, None))
-    #     self.X = lasagne.layers.InputLayer((None, self.config.nc,
-    #                                         self.config.npx, self.config.npx))
-    #
-    #     self.gen_X = self._spatial_generator(self.Z)
-    #     self.gen_X_det = self._spatial_generator_det(self.Z)
-    #
-    #     self.pred_gen = get_output(self.gen_X)
-    #     self.pred_gen_det = get_output(self.gen_X_det,
-    #                                                   deterministic=True)
-    #
-    #     if not isinstance(self, InversePSGAN):
-    #         d_real = self.__spatial_discriminator(self.X)
-    #         d_fake = self.__spatial_discriminator(self.gen_X)
-    #
-    #         pred_real = get_output(d_real)
-    #         pred_fake = get_output(d_fake)
-    #
-    #         params_g = lasagne.layers.get_all_params(self.gen_X, trainable=True)
-    #         params_d = lasagne.layers.get_all_params(d_real, trainable=True)
-    #
-    #         l2_gen = lasagne.regularization.regularize_network_params(
-    #             self.gen_X, lasagne.regularization.l2)
-    #         l2_dis = lasagne.regularization.regularize_network_params(
-    #             d_real, lasagne.regularization.l2)
-    #
-    #         obj_d= -T.mean(T.log(1-pred_fake)) - T.mean( T.log(pred_real)) \
-    #                + self.config.l2_fac * l2_dis
-    #         obj_g= -T.mean(T.log(pred_fake)) + self.config.l2_fac * l2_gen
-    #
-    #         updates_d = lasagne.updates.adam(obj_d, params_d,
-    #                                          self.config.lr, self.config.b1)
-    #         updates_g = lasagne.updates.adam(obj_g, params_g,
-    #                                          self.config.lr, self.config.b1)
-    #
-    #         logger = utils.create_logger('run_psgan.psgan_build',
-    #                                      stream=sys.stdout)
-    #         logger.info("Compiling the network...")
-    #         self.train_d = theano.function(
-    #             [self.X.input_var, self.Z.input_var], obj_d,
-    #             updates=updates_d, allow_input_downcast=True)
-    #         logger.info("Discriminator done.")
-    #         self.train_g = theano.function(
-    #             [self.Z.input_var], obj_g, updates=updates_g,
-    #             allow_input_downcast=True)
-    #         logger.info("Generator done.")
-    #         self.generate = theano.function(
-    #             [self.Z.input_var], self.pred_gen,
-    #             allow_input_downcast=True)
-    #         self.generate_det = theano.function(
-    #             [self.Z.input_var], self.pred_gen_det,
-    #             allow_input_downcast=True)
-    #         logger.info("generate function done.")
-
     def save(self, name):
         logger = logging.getLogger('run_psgan.psgan_save')
         logger.info("saving PSGAN parameters in file: {}".format(name))
@@ -437,15 +381,14 @@ class PSGAN(object):
 
 class InversePSGAN(PSGAN):
 
-    def __init__(self, name=None):
-        super(InversePSGAN, self).__init__(name)
+    def __init__(self, name=None, **kwargs):
+        super(InversePSGAN, self).__init__(name, **kwargs)
 
         self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
 
         if name is None:
             self._sample_initials()
 
-        # self._build_sgan()
         self._build_network()
         self._build_obj()
         self._compile_network()
@@ -578,11 +521,18 @@ class InversePSGAN(PSGAN):
     def _build_network(self):
         self.Z_global = lasagne.layers.InputLayer((None, self.config.nz_global,
                                                    None, None))
+        self.Z_loc_and_period = lasagne.layers.ScaleLayer(
+            self.Z, indices=slice(self.config.nz_global, None), axis=1)
+
         self.gen_Z = self._spatial_generator_Z(self.X)
         self.gen_Z_det = self._spatial_generator_Z_det(self.X)
 
         gen_X_const = self._spatial_generator(self.Z, is_const=True)
         self.Z_g_reconst = self._spatial_generator_Z(gen_X_const)
+
+        self.gen_Z_full = lasagne.layers.ConcatLayer(
+            [self.gen_Z, self.Z_loc_and_period], axis=1)
+        self.X_reconst = self._spatial_generator(self.gen_Z_full, is_const=True)
 
         Z_transformed = self._transform_Z(self.Z_global)
         self.d_fake, X_Z_fake = self._spatial_discriminator(
@@ -597,6 +547,8 @@ class InversePSGAN(PSGAN):
         self.gen_Z_out = get_output(self.gen_Z)
         self.gen_Z_det_out = get_output(self.gen_Z_det, deterministic=True)
         self.Z_g_reconst_out = get_output(self.Z_g_reconst)
+        self.X_out = get_output(self.X)
+        self.X_reconst_out = get_output(self.X_reconst)
 
         d_real_out = get_output(self.d_real)
         d_fake_out = get_output(self.d_fake)
@@ -612,6 +564,7 @@ class InversePSGAN(PSGAN):
         l2_d = lasagne.regularization.apply_penalty(
             list(self.dis_W[0]) + self.dis_W[1:], lasagne.regularization.l2)
         z_reconst_loss = T.mean((self.Z_global_out - self.Z_g_reconst_out)**2)
+        x_reconst_loss = T.mean((self.X_out - self.X_reconst_out)**2)
 
         self.obj_d = -T.mean(T.log(1 - d_fake_out)) \
                      - T.mean(T.log(d_real_out)) \
@@ -619,7 +572,8 @@ class InversePSGAN(PSGAN):
         self.obj_g = -T.mean(T.log(d_fake_out)) \
                      - T.mean(T.log(1 - d_real_out)) \
                      + self.config.l2_fac * l2_g + self.config.l2_fac * l2_g_z \
-                     + self.config.z_reconst_fac * z_reconst_loss
+                     + self.config.z_reconst_fac * z_reconst_loss \
+                     + self.config.x_reconst_fac * x_reconst_loss
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)
         self.updates_g = lasagne.updates.adam(
@@ -649,89 +603,6 @@ class InversePSGAN(PSGAN):
             [self.X.input_var], self.gen_Z_det_out,
             allow_input_downcast=True)
         logger.info("generate function done.")
-
-    # def _build_sgan(self):
-    #     self.Z_global = lasagne.layers.InputLayer(
-    #         (None, self.config.nz_global, None, None))
-    #     self.z_g = get_output(self.Z_global)
-    #
-    #     self.gen_Z = self._spatial_generator_Z(self.X)
-    #     self.gen_Z_det = self._spatial_generator_Z_det(self.X)
-    #
-    #     gen_X_const = self._spatial_generator(self.Z, is_const=True)
-    #     self.Z_g_reconst = self._spatial_generator_Z(gen_X_const)
-    #
-    #     Z_transformed = self._transform_Z(self.Z_global)
-    #     d_fake, X_Z_fake = self._spatial_discriminator(
-    #         self.gen_X, Z_transformed)
-    #
-    #     gen_Z_transformed = self._transform_Z(self.gen_Z)
-    #     d_real, X_Z_real = self._spatial_discriminator(
-    #         self.X, gen_Z_transformed)
-    #
-    #     self.pred_gen_z = get_output(self.gen_Z)
-    #     self.pred_gen_z_det = get_output(
-    #         self.gen_Z_det, deterministic=True)
-    #
-    #     self.pred_z_g_reconst = get_output(self.Z_g_reconst)
-    #
-    #     pred_real = get_output(d_real)
-    #     pred_fake = get_output(d_fake)
-    #
-    #     params_g = lasagne.layers.get_all_params(self.gen_X, trainable=True)
-    #     params_g += lasagne.layers.get_all_params(gen_Z_transformed,
-    #                                               trainable=True)
-    #
-    #     params_d = list(self.dis_W[0]) + self.dis_W[
-    #                                      1:] + self.dis_b + self.dis_g
-    #
-    #     l2_gen = lasagne.regularization.regularize_network_params(
-    #         self.gen_X, lasagne.regularization.l2)
-    #     l2_gen_z = lasagne.regularization.regularize_network_params(
-    #         gen_Z_transformed, lasagne.regularization.l2)
-    #     l2_dis = lasagne.regularization.apply_penalty(
-    #         list(self.dis_W[0]) + self.dis_W[1:], lasagne.regularization.l2)
-    #
-    #     z_reconst_loss = T.mean((self.z_g - self.pred_z_g_reconst)**2)
-    #
-    #     obj_d = -T.mean(T.log(1 - pred_fake)) - T.mean(
-    #         T.log(pred_real))
-    #     obj_d += self.config.l2_fac * l2_dis
-    #
-    #     obj_g = -T.mean(T.log(pred_fake)) - T.mean(
-    #         T.log(1 - pred_real))
-    #     obj_g += self.config.l2_fac * l2_gen + self.config.l2_fac * l2_gen_z
-    #     obj_g += self.config.z_reconst_fac * z_reconst_loss
-    #
-    #
-    #     updates_d = lasagne.updates.adam(obj_d, params_d, self.config.lr,
-    #                                      self.config.b1)
-    #     updates_g = lasagne.updates.adam(obj_g, params_g, self.config.lr,
-    #                                      self.config.b1)
-    #
-    #     logger = utils.create_logger('run_psgan.invpsgan_build',
-    #                                  stream=sys.stdout)
-    #     logger.info("Compiling the network...")
-    #     self.train_d = theano.function(
-    #         [self.X.input_var, self.Z.input_var, self.Z_global.input_var],
-    #         obj_d, updates=updates_d, allow_input_downcast=True)
-    #     logger.info("Discriminator done.")
-    #     self.train_g = theano.function(
-    #         [self.X.input_var, self.Z.input_var, self.Z_global.input_var],
-    #         obj_g, updates=updates_g, allow_input_downcast=True)
-    #     logger.info("Generator done.")
-    #     self.generate = theano.function(
-    #         [self.Z.input_var], self.pred_gen, allow_input_downcast=True)
-    #     self.generate_det = theano.function(
-    #         [self.Z.input_var], self.pred_gen_det,
-    #         allow_input_downcast=True)
-    #     self.generate_z = theano.function(
-    #         [self.X.input_var], self.pred_gen_z,
-    #         allow_input_downcast=True)
-    #     self.generate_z_det = theano.function(
-    #         [self.X.input_var], self.pred_gen_z_det,
-    #         allow_input_downcast=True)
-    #     logger.info("generate function done.")
 
     def save(self, name):
         logger = logging.getLogger('run_psgan.invpsgan_save')

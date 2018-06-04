@@ -25,6 +25,10 @@ def main():
                       help="steps inside one epoch")
     parser.add_option("--b_size", type='int', default=25,
                       help="batch size")
+    parser.add_option("--z_rec_fac", type='float', default=0.0,
+                      help="factor for Z reconstruction loss")
+    parser.add_option("--x_rec_fac", type='float', default=0.0,
+                      help="factor for X reconstruction loss")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -38,7 +42,8 @@ def main():
     if not options.is_inverse:
         psgan = PSGAN(checkpoint_path)
     else:
-        psgan = InversePSGAN(checkpoint_path)
+        psgan = InversePSGAN(checkpoint_path, z_reconst_fac=options.z_rec_fac,
+                             x_reconst_fac=options.x_rec_fac)
 
     if options.mode == 'train':
         model_dir = utils.create_model_folder('models', vars(options))

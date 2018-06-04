@@ -531,8 +531,12 @@ class InversePSGAN(PSGAN):
         gen_X_const = self._spatial_generator(self.Z, is_const=True)
         self.Z_g_reconst = self._spatial_generator_Z(gen_X_const)
 
+        self.gen_Z_upscaled = lasagne.layers.ConcatLayer(
+            [self.gen_Z] * self.config.zx, axis=2)
+        self.gen_Z_upscaled = lasagne.layers.ConcatLayer(
+            [self.gen_Z_upscaled] * self.config.zx, axis=3)
         self.gen_Z_full = lasagne.layers.ConcatLayer(
-            [self.gen_Z, self.Z_loc_and_period], axis=1)
+            [self.gen_Z_upscaled, self.Z_loc_and_period], axis=1)
         self.X_reconst = self._spatial_generator(self.gen_Z_full, is_const=True)
 
         Z_transformed = self._transform_Z(self.Z_global)

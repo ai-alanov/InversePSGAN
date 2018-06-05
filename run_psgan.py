@@ -3,7 +3,7 @@ from optparse import OptionParser
 import os
 import sys
 
-from psgan import PSGAN, InversePSGAN
+from psgan import PSGAN, InversePSGAN, InversePSGAN2
 import utils
 from train_and_sample import train, sample
 
@@ -13,7 +13,7 @@ def main():
                           version="%prog 1.0")
     parser.add_option("--mode", type='string', default='train',
                       help="train or sample")
-    parser.add_option("--is_inverse", type='int', default=0,
+    parser.add_option("--inverse", type='int', default=0,
                       help="use PSGAN or InversePSGAN")
     parser.add_option("--checkpoint", type='string', default=None,
                       help="load a model from checkpoint, format: \'Y-m-d.id\'")
@@ -39,11 +39,15 @@ def main():
 
 
     checkpoint_path = utils.find_checkpoint('models', options.checkpoint)
-    if not options.is_inverse:
+    if options.inverse == 0:
         psgan = PSGAN(checkpoint_path)
-    else:
+    elif options.inverse == 1:
         psgan = InversePSGAN(checkpoint_path, z_reconst_fac=options.z_rec_fac,
                              x_reconst_fac=options.x_rec_fac)
+    elif options.inverse == 2:
+        psgan = InversePSGAN2(checkpoint_path)
+    else:
+        raise Exception('No valid inverse parameter!')
 
     if options.mode == 'train':
         model_dir = utils.create_model_folder('models', vars(options))

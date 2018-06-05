@@ -29,6 +29,8 @@ def main():
                       help="factor for Z reconstruction loss")
     parser.add_option("--x_rec_fac", type='float', default=0.0,
                       help="factor for X reconstruction loss")
+    parser.add_option("--save_step", type='int', default=10,
+                      help="step for saving model")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -54,7 +56,7 @@ def main():
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
 
         train(psgan, psgan.config, logger, options, model_dir,
-              samples_dir, inverse=options.inverse)
+              samples_dir, inverse=options.inverse, save_step=options.save_step)
     elif options.mode == 'sample':
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
         sample(psgan, psgan.config, samples_dir,

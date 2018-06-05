@@ -915,17 +915,21 @@ class InversePSGAN2(PSGAN):
         self.gen_g = [sharedX(p) for p in vals["gen_g"]]
         self.gen_b = [sharedX(p) for p in vals["gen_b"]]
 
-        self.gen_z_W = [sharedX(p) for p in vals["gen_z_W"]]
-        self.gen_z_g = [sharedX(p) for p in vals["gen_z_g"]]
-        self.gen_z_b = [sharedX(p) for p in vals["gen_z_b"]]
+        if hasattr(vals, 'gen_z_W'):
+            self.gen_z_W = [sharedX(p) for p in vals["gen_z_W"]]
+            self.gen_z_g = [sharedX(p) for p in vals["gen_z_g"]]
+            self.gen_z_b = [sharedX(p) for p in vals["gen_z_b"]]
+        else:
+            self._sample_initials()
 
         self.wave_params = [sharedX(p) for p in vals["wave_params"]]
 
         self.means = [sharedX(p) for p in vals["means"]]
         self.inv_stds = [sharedX(p) for p in vals["inv_stds"]]
 
-        self.means_z = [sharedX(p) for p in vals["means_z"]]
-        self.inv_stds_z = [sharedX(p) for p in vals["inv_stds_z"]]
+        if hasattr(vals, 'means_z'):
+            self.means_z = [sharedX(p) for p in vals["means_z"]]
+            self.inv_stds_z = [sharedX(p) for p in vals["inv_stds_z"]]
 
         self.config.gen_ks = []
         self.config.gen_fn = []

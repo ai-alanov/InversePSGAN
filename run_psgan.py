@@ -54,7 +54,7 @@ def main():
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
 
         train(psgan, psgan.config, logger, options, model_dir,
-              samples_dir, inverse=options.is_inverse)
+              samples_dir, inverse=options.inverse)
     elif options.mode == 'sample':
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
         sample(psgan, psgan.config, samples_dir,

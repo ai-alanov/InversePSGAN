@@ -832,8 +832,7 @@ class InversePSGAN2(PSGAN):
 
         params_g = get_all_params(self.gen_X, trainable=True)
         params_g += get_all_params(self.gen_Z, trainable=True)
-        params_d = list(self.dis_W[0]) + self.dis_W[1:] \
-                   + self.dis_b + self.dis_g
+        params_d = get_all_params(self.d_real, trainable=True)
         l2_g = regularize_network_params(self.gen_X,
                                          lasagne.regularization.l2)
         l2_g_z = regularize_network_params(self.gen_Z,

@@ -923,6 +923,8 @@ class InversePSGAN2(PSGAN):
             self.w_init = lasagne.init.Normal(std=0.02)
             self.b_init = lasagne.init.Constant(val=0.0)
             self.g_init = lasagne.init.Normal(mean=1., std=0.02)
+
+            self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
             self._sample_initials()
 
         self.wave_params = [sharedX(p) for p in vals["wave_params"]]

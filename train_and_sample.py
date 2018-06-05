@@ -29,15 +29,19 @@ def train(model, config, logger, options, model_dir, samples_dir, inverse=False)
 
             X_samples = next(samples_generator)
             if it % (config.k + 1) == 0:
-                if not inverse:
+                if inverse == 0:
                     Gcost.append(model.train_g(Z_samples))
-                else:
+                elif inverse == 1:
                     Gcost.append(model.train_g(X_samples, Z_samples, Z_global))
+                elif inverse == 2:
+                    Gcost.append(model.train_g(X_samples, Z_samples))
             else:
-                if not inverse:
+                if inverse == 0:
                     Dcost.append(model.train_d(X_samples, Z_samples))
-                else:
+                elif inverse == 1:
                     Dcost.append(model.train_d(X_samples, Z_samples, Z_global))
+                elif inverse == 2:
+                    Dcost.append(model.train_d(X_samples, Z_samples))
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 

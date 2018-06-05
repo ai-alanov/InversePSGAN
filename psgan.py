@@ -797,8 +797,6 @@ class InversePSGAN2(PSGAN):
         return output
 
     def _build_network(self):
-        self.Z_global = lasagne.layers.InputLayer((None, self.config.nz_global,
-                                                   None, None))
         self.Z_loc_and_period = lasagne.layers.SliceLayer(
             self.Z, indices=slice(self.config.nz_global, None), axis=1)
 
@@ -821,7 +819,6 @@ class InversePSGAN2(PSGAN):
         self.d_fake = self._spatial_discriminator(self.gen_X_double)
 
     def _build_obj(self):
-        self.Z_global_out = get_output(self.Z_global)
         self.gen_Z_out = get_output(self.gen_Z)
         self.gen_Z_det_out = get_output(self.gen_Z_det, deterministic=True)
         self.X_out = get_output(self.X)
@@ -856,11 +853,11 @@ class InversePSGAN2(PSGAN):
                                      stream=sys.stdout)
         logger.info("Compiling the network...")
         self.train_d = theano.function(
-            [self.X.input_var, self.Z.input_var, self.Z_global.input_var],
+            [self.X.input_var, self.Z.input_var],
             self.obj_d, updates=self.updates_d, allow_input_downcast=True)
         logger.info("Discriminator done.")
         self.train_g = theano.function(
-            [self.X.input_var, self.Z.input_var, self.Z_global.input_var],
+            [self.X.input_var, self.Z.input_var],
             self.obj_g, updates=self.updates_g, allow_input_downcast=True)
         logger.info("Generator done.")
         self.generate = theano.function(

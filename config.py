@@ -17,7 +17,7 @@ class Config(object):
     lr = 0.0002
     b1 = 0.5 # momentum term of adam
     l2_fac = 1e-8 # L2 weight regularization factor
-    k = 3 # number of G updates vs D updates
+    k = 1 # number of G updates vs D updates
 
     def __init__(self, z_reconst_fac=0.0, x_reconst_fac=0.0):
         self.z_reconst_fac = z_reconst_fac

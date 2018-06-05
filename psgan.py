@@ -837,8 +837,8 @@ class InversePSGAN2(PSGAN):
                                          lasagne.regularization.l2)
         l2_g_z = regularize_network_params(self.gen_Z,
                                            lasagne.regularization.l2)
-        l2_d = lasagne.regularization.apply_penalty(
-            list(self.dis_W[0]) + self.dis_W[1:], lasagne.regularization.l2)
+        l2_d = lasagne.regularization.apply_penalty(self.d_real,
+                                                    lasagne.regularization.l2)
 
         self.obj_d = -T.mean(T.log(1 - d_fake_out)) \
                      - T.mean(T.log(d_real_out)) \

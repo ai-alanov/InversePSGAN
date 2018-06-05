@@ -920,6 +920,9 @@ class InversePSGAN2(PSGAN):
             self.gen_z_g = [sharedX(p) for p in vals["gen_z_g"]]
             self.gen_z_b = [sharedX(p) for p in vals["gen_z_b"]]
         else:
+            self.w_init = lasagne.init.Normal(std=0.02)
+            self.b_init = lasagne.init.Constant(val=0.0)
+            self.g_init = lasagne.init.Normal(mean=1., std=0.02)
             self._sample_initials()
 
         self.wave_params = [sharedX(p) for p in vals["wave_params"]]

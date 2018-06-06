@@ -872,7 +872,7 @@ class InversePSGAN2(PSGAN):
         self.generate_x_double = theano.function(
             [self.X.input_var], self.X_double_out, allow_input_downcast=True)
         self.generate_gen_x_double = theano.function(
-            [self.Z.input_var], self.gen_X_double_out,
+            [self.X.input_var, self.Z.input_var], self.gen_X_double_out,
             allow_input_downcast=True)
         logger.info("generate function done.")
 

@@ -46,17 +46,16 @@ def train(model, config, logger, options, model_dir, samples_dir,
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 
+        X = next(samples_generator)
         if inverse == 2:
-            X_samples = next(samples_generator)
-            X_samples = model.generate_x_double(X_samples)
+            X_samples = model.generate_x_double(X)
             X_samples = np.concatenate(X_samples, axis=1)
         else:
-            X_samples = next(samples_generator)
-            X_samples = np.concatenate(X_samples, axis=2)
+            X_samples = np.concatenate(X, axis=2)
 
         Z_samples = utils.sample_noise_tensor(config, options.b_size, config.zx)
         if inverse == 2:
-            gen_samples = model.generate_gen_x_double(Z_samples)
+            gen_samples = model.generate_gen_x_double(X, Z_samples)
             gen_samples = np.concatenate(gen_samples, axis=1)
         else:
             gen_samples = model.generate(Z_samples)

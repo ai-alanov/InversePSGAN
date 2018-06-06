@@ -916,6 +916,7 @@ class InversePSGAN2(PSGAN):
             self.dis_g = [sharedX(p) for p in vals["dis_g"]]
             self.dis_b = [sharedX(p) for p in vals["dis_b"]]
         else:
+            self._setup_dis_params(self.config.dis_ks, self.config.dis_fn)
             self.w_init = lasagne.init.Normal(std=0.02)
             self.b_init = lasagne.init.Constant(val=0.0)
             self.g_init = lasagne.init.Normal(mean=1., std=0.02)

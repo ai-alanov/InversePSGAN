@@ -56,7 +56,7 @@ def train(model, config, logger, options, model_dir, samples_dir,
         Z_samples = utils.sample_noise_tensor(config, options.b_size, config.zx)
         if inverse == 2:
             gen_samples = model.generate(Z_samples)
-            gen_samples = np.concatenate(gen_samples, axis=2)
+            gen_samples = np.concatenate(gen_samples, axis=1)
         else:
             gen_samples = model.generate(Z_samples)
             gen_samples = np.concatenate(gen_samples, axis=3)

@@ -60,7 +60,7 @@ def main():
     elif options.mode == 'sample':
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
         sample(psgan, psgan.config, samples_dir,
-               options.data, inverse=options.is_inverse)
+               options.data, inverse=options.inverse)
 
 
 if __name__ == '__main__':

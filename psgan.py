@@ -823,6 +823,8 @@ class InversePSGAN2(PSGAN):
         self.gen_Z_det_out = get_output(self.gen_Z_det, deterministic=True)
         self.X_out = get_output(self.X)
         self.X_reconst_out = get_output(self.X_reconst)
+        self.X_double_out = get_output(self.X_double)
+        self.gen_X_double_out = get_output(self.gen_X_double)
 
         d_real_out = get_output(self.d_real)
         d_fake_out = get_output(self.d_fake)
@@ -862,13 +864,15 @@ class InversePSGAN2(PSGAN):
         self.generate = theano.function(
             [self.Z.input_var], self.gen_X_out, allow_input_downcast=True)
         self.generate_det = theano.function(
-            [self.Z.input_var], self.gen_X_det_out,
-            allow_input_downcast=True)
+            [self.Z.input_var], self.gen_X_det_out, allow_input_downcast=True)
         self.generate_z = theano.function(
-            [self.X.input_var], self.gen_Z_out,
-            allow_input_downcast=True)
+            [self.X.input_var], self.gen_Z_out, allow_input_downcast=True)
         self.generate_z_det = theano.function(
-            [self.X.input_var], self.gen_Z_det_out,
+            [self.X.input_var], self.gen_Z_det_out, allow_input_downcast=True)
+        self.generate_x_double = theano.function(
+            [self.X.input_var], self.X_double_out, allow_input_downcast=True)
+        self.generate_gen_x_double = theano.function(
+            [self.Z.input_var], self.gen_X_double_out,
             allow_input_downcast=True)
         logger.info("generate function done.")
 

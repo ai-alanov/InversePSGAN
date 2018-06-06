@@ -23,7 +23,7 @@ def main():
                       help="how many epochs to do globally")
     parser.add_option("--n_iters", type='int', default=1000,
                       help="steps inside one epoch")
-    parser.add_option("--b_size", type='int', default=25,
+    parser.add_option("--b_size", type='int', default=40,
                       help="batch size")
     parser.add_option("--z_rec_fac", type='float', default=0.0,
                       help="factor for Z reconstruction loss")

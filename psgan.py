@@ -537,7 +537,7 @@ class InversePSGAN(PSGAN):
             [self.gen_Z_upscaled] * self.config.zx, axis=3)
         self.gen_Z_full = lasagne.layers.ConcatLayer(
             [self.gen_Z_upscaled, self.Z_loc_and_period], axis=1)
-        self.X_reconst = self._spatial_generator(self.gen_Z_full, is_const=True)
+        self.X_reconst = self._spatial_generator(self.gen_Z_full)
 
         Z_transformed = self._transform_Z(self.Z_global)
         self.d_fake, X_Z_fake = self._spatial_discriminator(

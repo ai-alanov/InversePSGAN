@@ -56,8 +56,8 @@ def get_texture_iter(texture_path, npx=128, batch_size=64, mirror=False):
     while True:
         data = np.zeros((batch_size, 3, npx, npx))  # NOTE: assumes 3 channels!
         for i in range(batch_size):
-            ir = np.random.randint(len(imTex))
-            imgBig = imTex[ir]
+            #ir = np.random.randint(len(imTex))
+            imgBig = imTex[i % len(imTex)]
             if HW < imgBig.shape[1] and HW < imgBig.shape[2]:  # sample patches
                 h = np.random.randint(imgBig.shape[1] - HW)
                 w = np.random.randint(imgBig.shape[2] - HW)

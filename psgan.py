@@ -809,13 +809,13 @@ class InversePSGAN2(PSGAN):
             [self.gen_Z_upscaled] * self.config.zx, axis=3)
         self.gen_Z_full = lasagne.layers.ConcatLayer(
             [self.gen_Z_upscaled, self.Z_loc_and_period], axis=1)
-        self.X_reconst = self._spatial_generator(self.gen_Z_full, is_const=True)
+        self.X_reconst = self._spatial_generator(self.gen_Z_full)
 
         self.X_double = lasagne.layers.ConcatLayer([self.X] * 2, axis=3)
         self.d_real = self._spatial_discriminator(self.X_double)
 
         self.gen_X_double = lasagne.layers.ConcatLayer(
-            [self.gen_X, self.X_reconst], axis=3)
+            [self.X, self.X_reconst], axis=3)
         self.d_fake = self._spatial_discriminator(self.gen_X_double)
 
     def _build_obj(self):
@@ -830,11 +830,11 @@ class InversePSGAN2(PSGAN):
         d_fake_out = get_output(self.d_fake)
 
         #params_g = get_all_params(self.gen_X, trainable=True)
-        params_g = get_all_params(self.gen_Z, trainable=True)
+        params_g = get_all_params(self.X_reconst, trainable=True)
         params_d = get_all_params(self.d_real, trainable=True)
         # l2_g = regularize_network_params(self.gen_X,
         #                                  lasagne.regularization.l2)
-        l2_g_z = regularize_network_params(self.gen_Z,
+        l2_g = regularize_network_params(self.X_reconst,
                                            lasagne.regularization.l2)
         l2_d = regularize_network_params(self.d_real,
                                          lasagne.regularization.l2)
@@ -843,7 +843,7 @@ class InversePSGAN2(PSGAN):
                      - T.mean(T.log(d_real_out)) \
                      + self.config.l2_fac * l2_d
         self.obj_g = -T.mean(T.log(d_fake_out)) \
-                     + self.config.l2_fac * l2_g_z
+                     + self.config.l2_fac * l2_g
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)
         self.updates_g = lasagne.updates.adam(

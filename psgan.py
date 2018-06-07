@@ -911,41 +911,22 @@ class InversePSGAN2(PSGAN):
         vals = joblib.load(name)
         self.config = vals["config"]
 
-        if False:
-            self.dis_W = [sharedX(p) for p in vals["dis_W"]]
-            self.dis_g = [sharedX(p) for p in vals["dis_g"]]
-            self.dis_b = [sharedX(p) for p in vals["dis_b"]]
-        else:
-            self._setup_dis_params(self.config.dis_ks, self.config.dis_fn)
-            self.w_init = lasagne.init.Normal(std=0.02)
-            self.b_init = lasagne.init.Constant(val=0.0)
-            self.g_init = lasagne.init.Normal(mean=1., std=0.02)
-
-            self.dis_W = []
-            self.dis_b = []
-            self.dis_g = []
-
-            self.dis_W.append(sharedX(self.w_init.sample(
-                (self.dis_fn[0], self.config.nc,
-                 self.dis_ks[0][0], self.dis_ks[0][1]))))
-            for l in range(self.dis_depth - 1):
-                self.dis_W.append(sharedX(self.w_init.sample(
-                    (self.dis_fn[l + 1], self.dis_fn[l],
-                     self.dis_ks[l + 1][0], self.dis_ks[l + 1][1]))))
-                self.dis_b.append(
-                    sharedX(self.b_init.sample((self.dis_fn[l + 1]))))
-                self.dis_g.append(
-                    sharedX(self.g_init.sample((self.dis_fn[l + 1]))))
+        self.dis_W = [sharedX(p) for p in vals["dis_W"]]
+        self.dis_g = [sharedX(p) for p in vals["dis_g"]]
+        self.dis_b = [sharedX(p) for p in vals["dis_b"]]
 
         self.gen_W = [sharedX(p) for p in vals["gen_W"]]
         self.gen_g = [sharedX(p) for p in vals["gen_g"]]
         self.gen_b = [sharedX(p) for p in vals["gen_b"]]
 
-        if False:#'gen_z_W' in vals:
+        if 'gen_z_W' in vals:
             self.gen_z_W = [sharedX(p) for p in vals["gen_z_W"]]
             self.gen_z_g = [sharedX(p) for p in vals["gen_z_g"]]
             self.gen_z_b = [sharedX(p) for p in vals["gen_z_b"]]
         else:
+            self.w_init = lasagne.init.Normal(std=0.02)
+            self.b_init = lasagne.init.Constant(val=0.0)
+            self.g_init = lasagne.init.Normal(mean=1., std=0.02)
 
             self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
             self._sample_initials()

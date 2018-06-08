@@ -93,12 +93,12 @@ def sample(model, config, samples_dir, texture_path,
     all_samples = []
     if inverse:
         for i in range(n_samples):
-            global_noise = model.generate_z(imgs[i])
-            z_samples = utils.sample_noise_tensor(config, 5, config.zx,
+            global_noise = model.generate_z_det(imgs[i])
+            z_samples = utils.sample_noise_tensor(config, 1, config.zx,
                                                   global_noise=global_noise)
-            gen_samples = model.generate(z_samples)
-            gen_samples = np.concatenate([imgs[i], gen_samples], axis=0)
-            gen_samples = np.concatenate(gen_samples, axis=2)
+            gen_samples = model.generate_gen_x_double(imgs[i], z_samples)
+            #gen_samples = np.concatenate([imgs[i], gen_samples], axis=0)
+            gen_samples = np.concatenate(gen_samples, axis=1)
             all_samples.append(gen_samples)
         all_samples = [np.concatenate(all_samples, axis=1)]
         utils.save_samples(samples_dir, all_samples, ['inv_gens'])
@@ -107,7 +107,7 @@ def sample(model, config, samples_dir, texture_path,
         global_noise = np.random.uniform(-1., 1., (1, config.nz_global, 1, 1))
         z_samples = utils.sample_noise_tensor(config, 5, config.zx,
                                               global_noise=global_noise)
-        gen_samples = model.generate(z_samples)
+        gen_samples = model.generate_det(z_samples)
         gen_samples = np.concatenate(gen_samples, axis=2)
         all_samples.append(gen_samples)
     all_samples = [np.concatenate(all_samples, axis=1)]

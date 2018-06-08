@@ -177,7 +177,7 @@ class PSGAN(object):
 
 
         self.dis_W.append(sharedX(self.w_init.sample(
-            (self.dis_fn[0], self.config.nc,
+            (self.dis_fn[0], 2*self.config.nc,
              self.dis_ks[0][0], self.dis_ks[0][1]))))
         for l in range(self.dis_depth-1):
             self.dis_W.append(sharedX(self.w_init.sample(

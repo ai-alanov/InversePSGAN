@@ -52,6 +52,9 @@ def train(model, config, logger, options, model_dir, samples_dir,
         X = next(samples_generator)
         if inverse == 2:
             X_samples = model.generate_x_double(X[0], X[1])
+            if X_samples.shape[1] == 6:
+                X_samples = np.concatenate(
+                    [X_samples[:, :3], X_samples[:, 3:]], axis=3)
             X_samples = np.concatenate(X_samples, axis=1)
         else:
             X_samples = np.concatenate(X, axis=2)
@@ -59,6 +62,9 @@ def train(model, config, logger, options, model_dir, samples_dir,
         Z_samples = utils.sample_noise_tensor(config, options.b_size, config.zx)
         if inverse == 2:
             gen_samples = model.generate_gen_x_double(X[0], Z_samples)
+            if gen_samples.shape[1] == 6:
+                gen_samples = np.concatenate(
+                    [gen_samples[:, :3], gen_samples[:, 3:]], axis=3)
             gen_samples = np.concatenate(gen_samples, axis=1)
         else:
             gen_samples = model.generate(Z_samples)

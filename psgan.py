@@ -813,11 +813,11 @@ class InversePSGAN2(PSGAN):
             [self.gen_Z_upscaled, self.Z_loc_and_period], axis=1)
         self.X_reconst = self._spatial_generator(self.gen_Z_full)
 
-        self.X_double = lasagne.layers.ConcatLayer([self.X, self.X2], axis=3)
+        self.X_double = lasagne.layers.ConcatLayer([self.X, self.X2], axis=1)
         self.d_real = self._spatial_discriminator(self.X_double)
 
         self.gen_X_double = lasagne.layers.ConcatLayer(
-            [self.X, self.X_reconst], axis=3)
+            [self.X, self.X_reconst], axis=1)
         self.d_fake = self._spatial_discriminator(self.gen_X_double)
 
     def _build_obj(self):

@@ -33,9 +33,18 @@ def get_images(img_files):
         except:
             print "Image ", file, " failed to load!"
     return imgs
-    
 
-def get_texture_iter(texture_path, npx=128, batch_size=64, mirror=False):
+def get_random_path(imgBig, HW):
+    if HW < imgBig.shape[1] and HW < imgBig.shape[2]:
+        h = np.random.randint(imgBig.shape[1] - HW)
+        w = np.random.randint(imgBig.shape[2] - HW)
+        img = imgBig[:, h:h + HW, w:w + HW]
+    else:
+        img = imgBig
+    return img
+
+def get_texture_iter(texture_path, npx=128, batch_size=64,
+                     mirror=False, inverse=0):
     HW = npx
     imTex = []
     try:
@@ -54,19 +63,19 @@ def get_texture_iter(texture_path, npx=128, batch_size=64, mirror=False):
             print "Image ", file, " failed to load!"
 
     while True:
-        data = np.zeros((batch_size, 3, npx, npx))  # NOTE: assumes 3 channels!
+        data = np.zeros((batch_size, 3, npx, npx))
+        if inverse == 2:
+            data2 = np.zeros((batch_size, 3, npx, npx))
         for i in range(batch_size):
-            #ir = np.random.randint(len(imTex))
-            imgBig = imTex[i % len(imTex)]
-            if HW < imgBig.shape[1] and HW < imgBig.shape[2]:  # sample patches
-                h = np.random.randint(imgBig.shape[1] - HW)
-                w = np.random.randint(imgBig.shape[2] - HW)
-                img = imgBig[:, h:h + HW, w:w + HW]
-            else:
-                img = imgBig
-            data[i] = img
-
-        yield data
+            ir = np.random.randint(len(imTex))
+            imgBig = imTex[ir]
+            data[i] = get_random_path(imgBig, HW)
+            if inverse == 2:
+                data2[i] = get_random_path(imgBig, HW)
+        if inverse == 2:
+            yield data, data2
+        else:
+            yield data
 
 
 def save_tensor(tensor, filename):

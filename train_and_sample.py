@@ -18,7 +18,8 @@ def train(model, config, logger, options, model_dir, samples_dir,
         Gcost = []
         Dcost = []
 
-        samples_generator = config.data_iter(options.data, options.b_size)
+        samples_generator = config.data_iter(options.data, options.b_size,
+                                             inverse=inverse)
 
         for it in tqdm(range(options.n_iters), file=sys.stdout):
             Z_global = None
@@ -35,27 +36,29 @@ def train(model, config, logger, options, model_dir, samples_dir,
                 elif inverse == 1:
                     Gcost.append(model.train_g(X_samples, Z_samples, Z_global))
                 elif inverse == 2:
-                    Gcost.append(model.train_g(X_samples, Z_samples))
+                    Gcost.append(model.train_g(X_samples[0],
+                                               Z_samples))
             else:
                 if inverse == 0:
                     Dcost.append(model.train_d(X_samples, Z_samples))
                 elif inverse == 1:
                     Dcost.append(model.train_d(X_samples, Z_samples, Z_global))
                 elif inverse == 2:
-                    Dcost.append(model.train_d(X_samples, Z_samples))
+                    Dcost.append(model.train_d(X_samples[0], X_samples[1],
+                                               Z_samples))
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 
         X = next(samples_generator)
         if inverse == 2:
-            X_samples = model.generate_x_double(X)
+            X_samples = model.generate_x_double(X[0], X[1])
             X_samples = np.concatenate(X_samples, axis=1)
         else:
             X_samples = np.concatenate(X, axis=2)
 
         Z_samples = utils.sample_noise_tensor(config, options.b_size, config.zx)
         if inverse == 2:
-            gen_samples = model.generate_gen_x_double(X, Z_samples)
+            gen_samples = model.generate_gen_x_double(X[0], Z_samples)
             gen_samples = np.concatenate(gen_samples, axis=1)
         else:
             gen_samples = model.generate(Z_samples)
@@ -94,11 +97,11 @@ def sample(model, config, samples_dir, texture_path,
     if inverse:
         for i in range(n_samples):
             global_noise = model.generate_z_det(imgs[i])
-            z_samples = utils.sample_noise_tensor(config, 1, config.zx,
+            z_samples = utils.sample_noise_tensor(config, 5, config.zx,
                                                   global_noise=global_noise)
-            gen_samples = model.generate_gen_x_double(imgs[i], z_samples)
-            #gen_samples = np.concatenate([imgs[i], gen_samples], axis=0)
-            gen_samples = np.concatenate(gen_samples, axis=1)
+            gen_samples = model.generate_det(z_samples)
+            gen_samples = np.concatenate([imgs[i], gen_samples], axis=0)
+            gen_samples = np.concatenate(gen_samples, axis=2)
             all_samples.append(gen_samples)
         all_samples = [np.concatenate(all_samples, axis=1)]
         utils.save_samples(samples_dir, all_samples, ['inv_gens'])

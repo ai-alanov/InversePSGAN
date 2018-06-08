@@ -208,22 +208,22 @@ class PSGAN(object):
         if is_const:
             for i, p in enumerate(params):
                 params[i] = [zero_grad(w) for w in p]
-        wave_params, gen_W, gen_g, gen_b = params
+        self.wave_params, self.gen_W, self.gen_g, self.gen_b = params
 
         layers = [inlayer]
-        layers.append(periodic(inlayer, self.config, wave_params))
+        layers.append(periodic(inlayer, self.config, self.wave_params))
 
         means = []
         inv_stds = []
         for l in range(self.gen_depth - 1):
             layers.append(batch_norm(
                 tconv(layers[-1], self.gen_fn[l], self.gen_ks[l],
-                      gen_W[l], nonlinearity=relu),
-                gamma=gen_g[l], beta=gen_b[l], alpha=1.0))
+                      self.gen_W[l], nonlinearity=relu),
+                gamma=self.gen_g[l], beta=self.gen_b[l], alpha=1.0))
             means += [layers[-1].input_layer.mean]
             inv_stds += [layers[-1].input_layer.inv_std]
         output  = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
-                        gen_W[-1], nonlinearity=tanh)
+                        self.gen_W[-1], nonlinearity=tanh)
         if not hasattr(self, 'means'):
             self.means = means
             self.inv_stds = inv_stds
@@ -797,6 +797,8 @@ class InversePSGAN2(PSGAN):
         return output
 
     def _build_network(self):
+        self.X2 = lasagne.layers.InputLayer((None, self.config.nc,
+                                             self.config.npx, self.config.npx))
         self.Z_loc_and_period = lasagne.layers.SliceLayer(
             self.Z, indices=slice(self.config.nz_global, None), axis=1)
 
@@ -811,7 +813,7 @@ class InversePSGAN2(PSGAN):
             [self.gen_Z_upscaled, self.Z_loc_and_period], axis=1)
         self.X_reconst = self._spatial_generator(self.gen_Z_full)
 
-        self.X_double = lasagne.layers.ConcatLayer([self.X] * 2, axis=3)
+        self.X_double = lasagne.layers.ConcatLayer([self.X, self.X2], axis=3)
         self.d_real = self._spatial_discriminator(self.X_double)
 
         self.gen_X_double = lasagne.layers.ConcatLayer(
@@ -829,11 +831,8 @@ class InversePSGAN2(PSGAN):
         d_real_out = get_output(self.d_real)
         d_fake_out = get_output(self.d_fake)
 
-        #params_g = get_all_params(self.gen_X, trainable=True)
         params_g = get_all_params(self.X_reconst, trainable=True)
         params_d = get_all_params(self.d_real, trainable=True)
-        # l2_g = regularize_network_params(self.gen_X,
-        #                                  lasagne.regularization.l2)
         l2_g = regularize_network_params(self.X_reconst,
                                            lasagne.regularization.l2)
         l2_d = regularize_network_params(self.d_real,
@@ -854,7 +853,7 @@ class InversePSGAN2(PSGAN):
                                      stream=sys.stdout)
         logger.info("Compiling the network...")
         self.train_d = theano.function(
-            [self.X.input_var, self.Z.input_var],
+            [self.X.input_var, self.X2.input_var, self.Z.input_var],
             self.obj_d, updates=self.updates_d, allow_input_downcast=True)
         logger.info("Discriminator done.")
         self.train_g = theano.function(
@@ -870,7 +869,8 @@ class InversePSGAN2(PSGAN):
         self.generate_z_det = theano.function(
             [self.X.input_var], self.gen_Z_det_out, allow_input_downcast=True)
         self.generate_x_double = theano.function(
-            [self.X.input_var], self.X_double_out, allow_input_downcast=True)
+            [self.X.input_var, self.X2.input_var], self.X_double_out,
+            allow_input_downcast=True)
         self.generate_gen_x_double = theano.function(
             [self.X.input_var, self.Z.input_var], self.gen_X_double_out,
             allow_input_downcast=True)
@@ -920,12 +920,10 @@ class InversePSGAN2(PSGAN):
         self.gen_b = [sharedX(p) for p in vals["gen_b"]]
 
         if 'gen_z_W' in vals:
-            logger.info('Hi!')
             self.gen_z_W = [sharedX(p) for p in vals["gen_z_W"]]
             self.gen_z_g = [sharedX(p) for p in vals["gen_z_g"]]
             self.gen_z_b = [sharedX(p) for p in vals["gen_z_b"]]
         else:
-            logger.info('What??!!')
             self.w_init = lasagne.init.Normal(std=0.02)
             self.b_init = lasagne.init.Constant(val=0.0)
             self.g_init = lasagne.init.Normal(mean=1., std=0.02)

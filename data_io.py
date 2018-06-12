@@ -64,15 +64,15 @@ def get_texture_iter(texture_path, npx=128, batch_size=64,
 
     while True:
         data = np.zeros((batch_size, 3, npx, npx))
-        if inverse == 2:
+        if inverse >= 2:
             data2 = np.zeros((batch_size, 3, npx, npx))
         for i in range(batch_size):
             ir = np.random.randint(len(imTex))
             imgBig = imTex[ir]
             data[i] = get_random_path(imgBig, HW)
-            if inverse == 2:
+            if inverse >= 2:
                 data2[i] = get_random_path(imgBig, HW)
-        if inverse == 2:
+        if inverse >= 2:
             yield data, data2
         else:
             yield data

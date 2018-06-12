@@ -706,18 +706,17 @@ class InversePSGAN2(PSGAN):
 
         self._build_network()
         self._build_obj()
-        self.generate_gen_x_double = theano.function(
-            [self.X.input_var, self.Z_loc_and_period.input_var],
-            self.gen_X_double_out,
-            allow_input_downcast=True)
-        self.generate_gen_z_full = theano.function(
-            [self.X.input_var, self.Z_loc_and_period.input_var],
-            get_output(self.gen_Z_full), allow_input_downcast=True)
-        self.generate = theano.function(
-            [self.Z.input_var], self.gen_X_out, allow_input_downcast=True)
-        self.generate_det = theano.function(
-            [self.Z.input_var], self.gen_X_det_out, allow_input_downcast=True)
-        compile = False
+        # self.generate_gen_x_double = theano.function(
+        #     [self.X.input_var, self.Z_loc_and_period.input_var],
+        #     self.gen_X_double_out,
+        #     allow_input_downcast=True)
+        # self.generate_gen_z_full = theano.function(
+        #     [self.X.input_var, self.Z_loc_and_period.input_var],
+        #     get_output(self.gen_Z_full), allow_input_downcast=True)
+        # self.generate = theano.function(
+        #     [self.Z.input_var], self.gen_X_out, allow_input_downcast=True)
+        # self.generate_det = theano.function(
+        #     [self.Z.input_var], self.gen_X_det_out, allow_input_downcast=True)
         if compile:
             self._compile_network()
 
@@ -813,8 +812,8 @@ class InversePSGAN2(PSGAN):
                                              self.config.npx, self.config.npx))
         self.Z_loc_and_period = lasagne.layers.SliceLayer(
             self.Z, indices=slice(self.config.nz_global, None), axis=1)
-        self.Z_loc_and_period = lasagne.layers.InputLayer(
-            (None, self.config.nz - self.config.nz_global, None, None))
+        # self.Z_loc_and_period = lasagne.layers.InputLayer(
+        #     (None, self.config.nz - self.config.nz_global, None, None))
 
         self.gen_Z = self._spatial_generator_Z(self.X)
         self.gen_Z_det = self._spatial_generator_Z_det(self.X)
@@ -886,7 +885,7 @@ class InversePSGAN2(PSGAN):
             [self.X.input_var, self.X2.input_var], self.X_double_out,
             allow_input_downcast=True)
         self.generate_gen_x_double = theano.function(
-            [self.X.input_var, self.Z_loc_and_period.input_var], self.gen_X_double_out,
+            [self.X.input_var, self.Z.input_var], self.gen_X_double_out,
             allow_input_downcast=True)
         logger.info("generate function done.")
 

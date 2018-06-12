@@ -3,7 +3,7 @@ from optparse import OptionParser
 import os
 import sys
 
-from psgan import PSGAN, InversePSGAN, InversePSGAN2
+from psgan import PSGAN, InversePSGAN, InversePSGAN2, InversePSGAN3
 import utils
 from train_and_sample import train, sample
 
@@ -48,6 +48,8 @@ def main():
                              x_reconst_fac=options.x_rec_fac)
     elif options.inverse == 2:
         psgan = InversePSGAN2(checkpoint_path)
+    elif options.inverse == 3:
+        psgan = InversePSGAN3(checkpoint_path)
     else:
         raise Exception('No valid inverse parameter!')
 

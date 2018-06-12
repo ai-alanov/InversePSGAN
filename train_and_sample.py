@@ -150,7 +150,7 @@ def sample(model, config, samples_dir, texture_path,
 
     X = np.concatenate(imgs, axis=0)
     Z_samples = utils.sample_noise_tensor(config, X.shape[0], config.zx)
-    gen_samples = model.generate_gen_x_double(X, Z_samples)
+    gen_samples = model.generate_gen_x_double(X, Z_samples[:, config.nz_global:])
     gen_samples = np.concatenate(gen_samples, axis=1)
 
     utils.save_samples(samples_dir, [gen_samples], ['gen'])

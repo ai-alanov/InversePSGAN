@@ -710,6 +710,11 @@ class InversePSGAN2(PSGAN):
             [self.X.input_var, self.Z_loc_and_period.input_var],
             self.gen_X_double_out,
             allow_input_downcast=True)
+        self.generate_gen_z_full = theano.function(
+            [self.X.input_var, self.Z_loc_and_period.input_var],
+            get_output(self.gen_Z_full), allow_input_downcast=True)
+        self.generate_det = theano.function(
+            [self.Z.input_var], self.gen_X_det_out, allow_input_downcast=True)
         compile = False
         if compile:
             self._compile_network()

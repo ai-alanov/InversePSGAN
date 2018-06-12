@@ -89,7 +89,8 @@ def train(model, config, logger, options, model_dir, samples_dir,
                 gen_samples = np.concatenate(gen_samples, axis=2)
                 all_samples.append(gen_samples)
             all_samples = [np.concatenate(all_samples, axis=1)]
-            utils.save_samples(samples_dir, all_samples, ['inv_gens'])
+            utils.save_samples(samples_dir, all_samples,
+                               ['inv_gens'], epoch=epoch)
             all_samples = []
             for i in range(X[0].shape[0]):
                 global_noise = np.random.uniform(-1., 1.,
@@ -100,7 +101,7 @@ def train(model, config, logger, options, model_dir, samples_dir,
                 gen_samples = np.concatenate(gen_samples, axis=2)
                 all_samples.append(gen_samples)
             all_samples = [np.concatenate(all_samples, axis=1)]
-            utils.save_samples(samples_dir, all_samples, ['gens'])
+            utils.save_samples(samples_dir, all_samples, ['gens'], epoch=epoch)
         if (epoch+1) % save_step == 0:
             model_file = 'epoch_{:04d}.model'.format(epoch)
             model.save(os.path.join(model_dir, model_file))
@@ -127,10 +128,10 @@ def sample(model, config, samples_dir, texture_path,
     all_samples = []
     if inverse:
         for i in range(n_samples):
-            global_noise = model.generate_z_det(imgs[i])
+            global_noise = model.generate_z(imgs[i])
             z_samples = utils.sample_noise_tensor(config, 5, config.zx,
                                                   global_noise=global_noise)
-            gen_samples = model.generate_det(z_samples)
+            gen_samples = model.generate(z_samples)
             gen_samples = np.concatenate([imgs[i], gen_samples], axis=0)
             gen_samples = np.concatenate(gen_samples, axis=2)
             all_samples.append(gen_samples)
@@ -141,7 +142,7 @@ def sample(model, config, samples_dir, texture_path,
         global_noise = np.random.uniform(-1., 1., (1, config.nz_global, 1, 1))
         z_samples = utils.sample_noise_tensor(config, 5, config.zx,
                                               global_noise=global_noise)
-        gen_samples = model.generate_det(z_samples)
+        gen_samples = model.generate(z_samples)
         gen_samples = np.concatenate(gen_samples, axis=2)
         all_samples.append(gen_samples)
     all_samples = [np.concatenate(all_samples, axis=1)]

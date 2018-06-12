@@ -266,7 +266,7 @@ class PSGAN(object):
         self.gen_X = self._spatial_generator(self.Z)
         self.gen_X_det = self._spatial_generator_det(self.Z)
 
-        if not isinstance(self, (InversePSGAN, InversePSGAN2)):
+        if not isinstance(self, (InversePSGAN, InversePSGAN2, InversePSGAN3)):
             self.d_real = self.__spatial_discriminator(self.X)
             self.d_fake = self.__spatial_discriminator(self.gen_X)
 
@@ -274,7 +274,7 @@ class PSGAN(object):
         self.gen_X_out = get_output(self.gen_X)
         self.gen_X_det_out = get_output(self.gen_X_det, deterministic=True)
 
-        if not isinstance(self, (InversePSGAN, InversePSGAN2)):
+        if not isinstance(self, (InversePSGAN, InversePSGAN2, InversePSGAN3)):
             d_real_out = get_output(self.d_real)
             d_fake_out = get_output(self.d_fake)
 
@@ -296,7 +296,7 @@ class PSGAN(object):
                 self.obj_g, params_g, self.config.lr, self.config.b1)
 
     def __compile_network(self):
-        if not isinstance(self, (InversePSGAN, InversePSGAN2)):
+        if not isinstance(self, (InversePSGAN, InversePSGAN2, InversePSGAN3)):
             logger = utils.create_logger('run_psgan.psgan_compile',
                                          stream=sys.stdout)
             logger.info("Compiling the network...")

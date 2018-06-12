@@ -706,6 +706,11 @@ class InversePSGAN2(PSGAN):
 
         self._build_network()
         self._build_obj()
+        self.generate_gen_x_double = theano.function(
+            [self.X.input_var, self.Z_loc_and_period.input_var],
+            self.gen_X_double_out,
+            allow_input_downcast=True)
+        compile = False
         if compile:
             self._compile_network()
 

@@ -50,7 +50,7 @@ class PeriodicLayer(lasagne.layers.Layer):
             self.params[p] = set('trainable')
         self.srng = RandomStreams(seed=1234)
 
-    def _wave_calculation(self,Z):
+    def _wave_calculation(self, Z):
         if self.config.nz_periodic ==0:
             return Z
         nPeriodic = self.config.nz_periodic
@@ -177,7 +177,7 @@ class PSGAN(object):
 
 
         self.dis_W.append(sharedX(self.w_init.sample(
-            (self.dis_fn[0], 2*self.config.nc,
+            (self.dis_fn[0], self.config.nc,
              self.dis_ks[0][0], self.dis_ks[0][1]))))
         for l in range(self.dis_depth-1):
             self.dis_W.append(sharedX(self.w_init.sample(
@@ -813,11 +813,11 @@ class InversePSGAN2(PSGAN):
             [self.gen_Z_upscaled, self.Z_loc_and_period], axis=1)
         self.X_reconst = self._spatial_generator(self.gen_Z_full)
 
-        self.X_double = lasagne.layers.ConcatLayer([self.X, self.X2], axis=1)
+        self.X_double = lasagne.layers.ConcatLayer([self.X, self.X2], axis=3)
         self.d_real = self._spatial_discriminator(self.X_double)
 
         self.gen_X_double = lasagne.layers.ConcatLayer(
-            [self.X, self.X_reconst], axis=1)
+            [self.X, self.X_reconst], axis=3)
         self.d_fake = self._spatial_discriminator(self.gen_X_double)
 
     def _build_obj(self):

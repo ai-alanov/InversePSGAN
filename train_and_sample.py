@@ -79,11 +79,13 @@ def train(model, config, logger, options, model_dir, samples_dir,
         if inverse == 2:
             all_samples = []
             for i in range(X[0].shape[0]):
-                global_noise = model.generate_z_det(X[0][i])
+                img = X[0][i]
+                img = np.reshape(img, (1,) + img.shape)
+                global_noise = model.generate_z_det(img)
                 z_samples = utils.sample_noise_tensor(config, 5, config.zx,
                                                       global_noise=global_noise)
                 gen_samples = model.generate_det(z_samples)
-                gen_samples = np.concatenate([X[0][i], gen_samples], axis=0)
+                gen_samples = np.concatenate([img, gen_samples], axis=0)
                 gen_samples = np.concatenate(gen_samples, axis=2)
                 all_samples.append(gen_samples)
             all_samples = [np.concatenate(all_samples, axis=1)]

@@ -34,7 +34,8 @@ def get_images(img_files):
             print "Image ", file, " failed to load!"
     return imgs
 
-def get_random_path(imgBig, HW):
+
+def get_random_patch(imgBig, HW):
     if HW < imgBig.shape[1] and HW < imgBig.shape[2]:
         h = np.random.randint(imgBig.shape[1] - HW)
         w = np.random.randint(imgBig.shape[2] - HW)
@@ -43,6 +44,7 @@ def get_random_path(imgBig, HW):
         img = imgBig
     return img
 
+
 def get_texture_iter(texture_path, npx=128, batch_size=64,
                      mirror=False, inverse=0):
     HW = npx
@@ -50,7 +52,7 @@ def get_texture_iter(texture_path, npx=128, batch_size=64,
     try:
         files = os.listdir(texture_path)
         files = [texture_path + file for file in files]
-    except:
+    except Exception:
         files = [texture_path]
     for file in files:
         try:
@@ -59,7 +61,7 @@ def get_texture_iter(texture_path, npx=128, batch_size=64,
             if mirror:
                 img = img.transpose(FLIP_LEFT_RIGHT)
                 imTex += [image_to_tensor(img)]
-        except:
+        except Exception:
             print "Image ", file, " failed to load!"
 
     while True:
@@ -69,9 +71,9 @@ def get_texture_iter(texture_path, npx=128, batch_size=64,
         for i in range(batch_size):
             ir = np.random.randint(len(imTex))
             imgBig = imTex[ir]
-            data[i] = get_random_path(imgBig, HW)
+            data[i] = get_random_patch(imgBig, HW)
             if inverse >= 2:
-                data2[i] = get_random_path(imgBig, HW)
+                data2[i] = get_random_patch(imgBig, HW)
         if inverse >= 2:
             yield data, data2
         else:

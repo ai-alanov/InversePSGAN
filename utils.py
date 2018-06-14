@@ -72,11 +72,11 @@ def find_checkpoint(model_dir, checkpoint):
         model_folder = os.path.join(model_folder, '*')
     else:
         date, id = checkpoint.split('.', 1)
-        #id = '{:06d}'.format(int(id))
         if '.' in id:
             id, epoch = id.split('.')
         else:
             epoch = ''
+        id = '{:06d}'.format(int(id))
         model_folder = os.path.join(model_dir, date, id)
         model_folder = os.path.join(model_folder + '_*', '*' + epoch + '*')
     last_model_name = sorted(glob.glob(model_folder))[-1]
@@ -128,24 +128,24 @@ def save_samples(save_dir, samples, names, epoch=None):
         save_tensor(sample, sample_file)
 
 
-def sample_noise_tensor(config, batch_size, zx, zx_quilt=None,
-                        global_noise=None):
+def sample_z(config, batch_size, zx, zx_quilt, global_noise):
     Z = np.zeros((batch_size, config.nz, zx, zx))
     Z_local = np.random.uniform(-1., 1., (batch_size, config.nz_local, zx, zx))
     Z[:, config.nz_global:config.nz_global + config.nz_local] = Z_local
 
-    if not global_noise is None:
+    if global_noise is not None:
         Z[:, :config.nz_global] = global_noise
     elif zx_quilt is None:
-        Z[:, :config.nz_global] = np.random.uniform(-1., 1., (
-        batch_size, config.nz_global, 1, 1))
+        Z[:, :config.nz_global] = np.random.uniform(
+            -1., 1., (batch_size, config.nz_global, 1, 1))
     else:
         for i in range(zx / zx_quilt):
             for j in range(zx / zx_quilt):
-                Z_global = np.random.uniform(-1., 1., (
-                batch_size, config.nz_global, 1, 1))
-                Z[:, :config.nz_global, i * zx_quilt:(i + 1) * zx_quilt,
-                j * zx_quilt:(j + 1) * zx_quilt] = Z_global
+                Z_global = np.random.uniform(
+                    -1., 1., (batch_size, config.nz_global, 1, 1))
+                i_slice = slice(i * zx_quilt, (i + 1) * zx_quilt)
+                j_slice = slice(j * zx_quilt, (j + 1) * zx_quilt)
+                Z[:, :config.nz_global, i_slice, j_slice] = Z_global
 
     if config.nz_periodic > 0:
         for i, pixel in zip(range(1, config.nz_periodic + 1),
@@ -156,4 +156,44 @@ def sample_noise_tensor(config, batch_size, zx, zx_quilt=None,
             for w in range(zx):
                 Z[:, -i * 2 + 1, w] = w * band
     return Z
+
+
+def sample_noise_tensor(config, batch_size, zx, zx_quilt=None,
+                        global_noise=None):
+    if global_noise is None or len(global_noise.shape) == 3:
+        return sample_z(config, batch_size, zx, zx_quilt, global_noise)
+    z_samples = []
+    for i in range(global_noise.shape[0]):
+        z_samples.append(
+            sample_z(config, batch_size, zx, zx_quilt, global_noise[i]))
+    z_samples = np.concatenate(z_samples, axis=0)
+    return z_samples
+
+
+def sample_after_iteration(model, X, inverse, config, batch_size):
+    if inverse >= 2:
+        real_samples = model.generate_x_double(X[0], X[1])
+        if real_samples.shape[1] == 6:
+            real_samples = np.concatenate(
+                [real_samples[:, :3], real_samples[:, 3:]], axis=3)
+        real_samples = np.concatenate(real_samples, axis=1)
+    else:
+        real_samples = np.concatenate(X, axis=2)
+
+    Z = sample_noise_tensor(config, batch_size, config.zx)
+    if inverse >= 2:
+        gen_samples = model.generate_gen_x_double(X[0], Z)
+        if gen_samples.shape[1] == 6:
+            gen_samples = np.concatenate(
+                [gen_samples[:, :3], gen_samples[:, 3:]], axis=3)
+        gen_samples = np.concatenate(gen_samples, axis=1)
+    else:
+        gen_samples = model.generate(Z)
+        gen_samples = np.concatenate(gen_samples, axis=2)
+
+    z = sample_noise_tensor(config, 1, config.zx_sample, config.zx_sample_quilt)
+    large_sample = model.generate(z)[0]
+
+    return real_samples, gen_samples, large_sample
+
 

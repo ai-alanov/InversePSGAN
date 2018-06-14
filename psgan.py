@@ -834,15 +834,13 @@ class InversePSGAN2(PSGAN):
         params_g = get_all_params(self.X_reconst, trainable=True)
         params_d = get_all_params(self.d_real, trainable=True)
         l2_g = regularize_network_params(self.X_reconst,
-                                           lasagne.regularization.l2)
+                                         lasagne.regularization.l2)
         l2_d = regularize_network_params(self.d_real,
                                          lasagne.regularization.l2)
 
         self.obj_d = -T.mean(T.log(1 - d_fake_out)) \
-                     - T.mean(T.log(d_real_out)) \
-                     + self.config.l2_fac * l2_d
-        self.obj_g = -T.mean(T.log(d_fake_out)) \
-                     + self.config.l2_fac * l2_g
+                     - T.mean(T.log(d_real_out)) + self.config.l2_fac * l2_d
+        self.obj_g = -T.mean(T.log(d_fake_out)) + self.config.l2_fac * l2_g
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)
         self.updates_g = lasagne.updates.adam(

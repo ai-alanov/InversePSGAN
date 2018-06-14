@@ -4,7 +4,7 @@ import sys
 from tqdm import tqdm
 
 import utils
-from data_io import get_images
+from data_io import get_images, get_random_patch
 
 np.random.seed(1234)
 
@@ -50,39 +50,19 @@ def train(model, config, logger, options, model_dir, samples_dir,
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 
         X = next(samples_generator)
-        if inverse >= 2:
-            X_samples = model.generate_x_double(X[0], X[1])
-            if X_samples.shape[1] == 6:
-                X_samples = np.concatenate(
-                    [X_samples[:, :3], X_samples[:, 3:]], axis=3)
-            X_samples = np.concatenate(X_samples, axis=1)
-        else:
-            X_samples = np.concatenate(X, axis=2)
+        real_samples, gen_samples, large_sample = utils.sample_after_iteration(
+            model, X, inverse, config, options.b_size)
+        utils.save_samples(
+            samples_dir, [real_samples, gen_samples, large_sample],
+            ['real', 'gen', 'large'], epoch=epoch)
 
-        Z_samples = utils.sample_noise_tensor(config, options.b_size, config.zx)
-        if inverse >= 2:
-            gen_samples = model.generate_gen_x_double(X[0], Z_samples)
-            if gen_samples.shape[1] == 6:
-                gen_samples = np.concatenate(
-                    [gen_samples[:, :3], gen_samples[:, 3:]], axis=3)
-            gen_samples = np.concatenate(gen_samples, axis=1)
-        else:
-            gen_samples = model.generate(Z_samples)
-            gen_samples = np.concatenate(gen_samples, axis=2)
-
-        z_sample = utils.sample_noise_tensor(config, 1, config.zx_sample,
-                                             config.zx_sample_quilt)
-        large_sample = model.generate(z_sample)[0]
-
-        utils.save_samples(samples_dir, [X_samples, gen_samples, large_sample],
-                           ['real', 'gen', 'large'], epoch=epoch)
         if (epoch+1) % save_step == 0:
             model_file = 'epoch_{:04d}.model'.format(epoch)
             model.save(os.path.join(model_dir, model_file))
 
 
 def sample(model, config, samples_dir, texture_path,
-           n_samples=20, inverse=False):
+           n_samples=20, n_z_samples=5, inverse=False):
     utils.makedirs(samples_dir)
 
     imgs = None
@@ -90,36 +70,25 @@ def sample(model, config, samples_dir, texture_path,
         img_files = sorted(os.listdir(texture_path))[:n_samples]
         img_files = [texture_path + file for file in img_files]
         imgs = get_images(img_files)
+        imgs = [get_random_patch(img, config.npx) for img in imgs]
         imgs = [np.reshape(img, (1,) + img.shape) for img in imgs]
-        cropped_imgs = []
-        npx = config.npx
-        for img in imgs:
-            h = np.random.randint(img.shape[2] - npx)
-            w = np.random.randint(img.shape[3] - npx)
-            cropped_img = img[:, :, h:h + npx, w:w + npx]
-            cropped_imgs.append(cropped_img)
-        imgs = cropped_imgs
     all_samples = []
     if inverse:
         X = np.concatenate(imgs, axis=0)
         global_noise = model.generate_z(X)
-        z_samples = []
-        for i in range(n_samples):
-            z_samples.append(utils.sample_noise_tensor(
-                config, 5, config.zx, global_noise=global_noise[i]))
-        z_samples = np.concatenate(z_samples, axis=0)
+        z_samples = utils.sample_noise_tensor(config, n_z_samples, config.zx,
+                                              global_noise=global_noise)
         gen_samples = model.generate(z_samples)
-        all_samples = [
-            np.concatenate([imgs[i], list(gen_samples[5*i:5*(i+1)])], axis=0)
-            for i in range(len(imgs))]
-        all_samples = [np.concatenate(samples, axis=2)
+        all_samples = [[img, list(gen_samples[n_z_samples*i:n_z_samples*(i+1)])]
+                       for i, img in enumerate(imgs)]
+        all_samples = [np.concatenate(np.concatenate(samples, axis=0), axis=2)
                        for samples in all_samples]
         all_samples = [np.concatenate(all_samples, axis=1)]
         utils.save_samples(samples_dir, all_samples, ['inv_gens'])
         all_samples = []
     for i in range(n_samples):
         global_noise = np.random.uniform(-1., 1., (1, config.nz_global, 1, 1))
-        z_samples = utils.sample_noise_tensor(config, 5, config.zx,
+        z_samples = utils.sample_noise_tensor(config, n_z_samples, config.zx,
                                               global_noise=global_noise)
         gen_samples = model.generate(z_samples)
         gen_samples = np.concatenate(gen_samples, axis=2)

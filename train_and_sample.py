@@ -28,7 +28,6 @@ def train(model, config, logger, options, model_dir, samples_dir,
                     -1., 1., (options.b_size, config.nz_global, 1, 1))
             Z_samples = utils.sample_noise_tensor(
                 config, options.b_size, config.zx, global_noise=Z_global)
-            logger.info(Z_samples.shape)
 
             X_samples = next(samples_generator)
             if it % (config.k + 1) != 0:
@@ -78,7 +77,8 @@ def sample(model, config, samples_dir, texture_path,
         X = np.concatenate(imgs, axis=0)
         global_noise = model.generate_z(X)
         z_samples = utils.sample_noise_tensor(config, n_z_samples, config.zx,
-                                              global_noise=global_noise)
+                                              global_noise=global_noise,
+                                              per_earch=True)
         gen_samples = model.generate(z_samples)
         all_samples = [[img, list(gen_samples[n_z_samples*i:n_z_samples*(i+1)])]
                        for i, img in enumerate(imgs)]

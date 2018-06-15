@@ -159,8 +159,8 @@ def sample_z(config, batch_size, zx, zx_quilt, global_noise):
 
 
 def sample_noise_tensor(config, batch_size, zx, zx_quilt=None,
-                        global_noise=None):
-    if global_noise is None or len(global_noise.shape) == 3:
+                        global_noise=None, per_each=False):
+    if global_noise is None or not per_each:
         return sample_z(config, batch_size, zx, zx_quilt, global_noise)
     z_samples = []
     for i in range(global_noise.shape[0]):

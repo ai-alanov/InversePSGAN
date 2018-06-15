@@ -28,7 +28,7 @@ def train(model, config, logger, options, model_dir, samples_dir,
                     -1., 1., (options.b_size, config.nz_global, 1, 1))
             Z_samples = utils.sample_noise_tensor(
                 config, options.b_size, config.zx, global_noise=Z_global)
-            print(Z_samples.shape)
+            logger.info(Z_samples.shape)
 
             X_samples = next(samples_generator)
             if it % (config.k + 1) != 0:

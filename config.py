@@ -15,11 +15,12 @@ def zx_to_npx(zx, depth):
 
 class Config(object):
     lr = 0.0002
-    b1 = 0.5 # momentum term of adam
-    l2_fac = 1e-8 # L2 weight regularization factor
-    k = 1 # number of G updates vs D updates
+    b1 = 0.5  # momentum term of adam
+    l2_fac = 1e-8  # L2 weight regularization factor
+    k = 1  # number of G updates vs D updates
 
-    def __init__(self, z_reconst_fac=0.0, x_reconst_fac=0.0):
+    def __init__(self, z_reconst_fac=0.0, x_reconst_fac=0.0, k=1):
+        self.k = k
         self.z_reconst_fac = z_reconst_fac
         self.x_reconst_fac = x_reconst_fac
 

@@ -31,6 +31,8 @@ def main():
                       help="factor for X reconstruction loss")
     parser.add_option("--save_step", type='int', default=10,
                       help="step for saving model")
+    parser.add_option("--k", type='int', default=1,
+                      help="number of G updates vs D updates")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -46,7 +48,7 @@ def main():
         psgan = InversePSGAN(checkpoint_path, z_reconst_fac=options.z_rec_fac,
                              x_reconst_fac=options.x_rec_fac)
     elif options.inverse == 2:
-        psgan = InversePSGAN2(checkpoint_path)
+        psgan = InversePSGAN2(checkpoint_path, k=options.k)
     elif options.inverse == 3:
         psgan = InversePSGAN3(checkpoint_path)
     else:

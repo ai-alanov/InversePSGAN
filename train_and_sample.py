@@ -78,7 +78,7 @@ def sample(model, config, samples_dir, texture_path,
         global_noise = model.generate_z(X)
         z_samples = utils.sample_noise_tensor(config, n_z_samples, config.zx,
                                               global_noise=global_noise,
-                                              per_earch=True)
+                                              per_each=True)
         gen_samples = model.generate(z_samples)
         all_samples = [[img, list(gen_samples[n_z_samples*i:n_z_samples*(i+1)])]
                        for i, img in enumerate(imgs)]

@@ -39,7 +39,6 @@ def main():
 
     sys.stderr = utils.copy_stream_to_log(sys.stderr, 'STDERR', log_file)
 
-
     checkpoint_path = utils.find_checkpoint('models', options.checkpoint)
     if options.inverse == 0:
         psgan = PSGAN(checkpoint_path)

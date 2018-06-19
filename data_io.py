@@ -46,9 +46,9 @@ def apply_random_rotate(img):
 
 def apply_random_flip(img):
     img = img.transpose((1, 2, 0))
-    if np.random.rand(2):
+    if np.random.randint(2):
         img = np.fliplr(img)
-    if np.random.rand(2):
+    if np.random.randint(2):
         img = np.flipud(img)
     img = img.transpose((2, 0, 1))
     return img

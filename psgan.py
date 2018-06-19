@@ -891,9 +891,10 @@ class InversePSGAN2(PSGAN):
         vals["dis_g"] = [p.get_value() for p in self.dis_g]
         vals["dis_b"] = [p.get_value() for p in self.dis_b]
 
-        vals["gen_W"] = [p.get_value() for p in self.gen_W]
-        vals["gen_g"] = [p.get_value() for p in self.gen_g]
-        vals["gen_b"] = [p.get_value() for p in self.gen_b]
+        if not self.is_const_gen:
+            vals["gen_W"] = [p.get_value() for p in self.gen_W]
+            vals["gen_g"] = [p.get_value() for p in self.gen_g]
+            vals["gen_b"] = [p.get_value() for p in self.gen_b]
 
         vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
         vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]

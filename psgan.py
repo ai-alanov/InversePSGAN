@@ -175,7 +175,6 @@ class PSGAN(object):
         self.dis_b = []
         self.dis_g = []
 
-
         self.dis_W.append(sharedX(self.w_init.sample(
             (self.dis_fn[0], self.config.nc,
              self.dis_ks[0][0], self.dis_ks[0][1]))))
@@ -833,10 +832,17 @@ class InversePSGAN2(PSGAN):
         d_real_out = get_output(self.d_real)
         d_fake_out = get_output(self.d_fake)
 
-        params_g = get_all_params(self.X_reconst, trainable=True)
+        if self.is_const_gen:
+            params_g = get_all_params(self.gen_Z, trainable=True)
+        else:
+            params_g = get_all_params(self.X_reconst, trainable=True)
         params_d = get_all_params(self.d_real, trainable=True)
-        l2_g = regularize_network_params(self.X_reconst,
-                                         lasagne.regularization.l2)
+        if self.is_const_gen:
+            l2_g = regularize_network_params(self.gen_Z,
+                                             lasagne.regularization.l2)
+        else:
+            l2_g = regularize_network_params(self.X_reconst,
+                                             lasagne.regularization.l2)
         l2_d = regularize_network_params(self.d_real,
                                          lasagne.regularization.l2)
 

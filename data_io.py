@@ -24,15 +24,34 @@ def tensor_to_image(tensor):
     return np.uint8(img)
 
 
-def get_images(img_files):
+def get_images(img_files, mirror=False):
     imgs = []
     for file in img_files:
         try:
             img = Image.open(file)
             imgs += [image_to_tensor(img)]
-        except:
+            if mirror:
+                img = img.transpose(FLIP_LEFT_RIGHT)
+                imgs += [image_to_tensor(img)]
+        except Exception:
             print "Image ", file, " failed to load!"
     return imgs
+
+
+def apply_random_rotate(img):
+    n_rotations = np.random.randint(4)
+    img = np.rot90(img, k=n_rotations, axes=(1, 2))
+    return img
+
+
+def apply_random_flip(img):
+    img = img.transpose((1, 2, 0))
+    if np.random.rand(2):
+        img = np.fliplr(img)
+    if np.random.rand(2):
+        img = np.flipud(img)
+    img = img.transpose((2, 0, 1))
+    return img
 
 
 def get_random_patch(imgBig, HW):
@@ -42,27 +61,20 @@ def get_random_patch(imgBig, HW):
         img = imgBig[:, h:h + HW, w:w + HW]
     else:
         img = imgBig
+    img = apply_random_rotate(img)
+    img = apply_random_flip(img)
     return img
 
 
 def get_texture_iter(texture_path, npx=128, batch_size=64,
                      mirror=False, inverse=0):
     HW = npx
-    imTex = []
     try:
         files = os.listdir(texture_path)
         files = [texture_path + file for file in files]
     except Exception:
         files = [texture_path]
-    for file in files:
-        try:
-            img = Image.open(file)
-            imTex += [image_to_tensor(img)]
-            if mirror:
-                img = img.transpose(FLIP_LEFT_RIGHT)
-                imTex += [image_to_tensor(img)]
-        except Exception:
-            print "Image ", file, " failed to load!"
+    imTex = get_images(files, mirror=mirror)
 
     while True:
         data = np.zeros((batch_size, 3, npx, npx))

@@ -696,8 +696,9 @@ class InversePSGAN(PSGAN):
 
 class InversePSGAN2(PSGAN):
 
-    def __init__(self, name=None, compile=True, **kwargs):
+    def __init__(self, name=None, compile=True, is_const_gen=False, **kwargs):
         super(InversePSGAN2, self).__init__(name, **kwargs)
+        self.is_const_gen = is_const_gen
 
         self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
 
@@ -811,7 +812,8 @@ class InversePSGAN2(PSGAN):
             [self.gen_Z_upscaled] * self.config.zx, axis=3)
         self.gen_Z_full = lasagne.layers.ConcatLayer(
             [self.gen_Z_upscaled, self.Z_loc_and_period], axis=1)
-        self.X_reconst = self._spatial_generator(self.gen_Z_full)
+        self.X_reconst = self._spatial_generator(self.gen_Z_full,
+                                                 is_const=self.is_const_gen)
 
         self.X_double = lasagne.layers.ConcatLayer([self.X, self.X2], axis=3)
         self.d_real = self._spatial_discriminator(self.X_double)
@@ -950,6 +952,7 @@ class InversePSGAN2(PSGAN):
                                     vals["gen_W"][i].shape[3])]
         self.config.nc = vals["gen_W"][i].shape[1]
         self.config.gen_fn += [self.config.nc]
+
 
 class InversePSGAN3(PSGAN):
 

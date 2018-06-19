@@ -35,6 +35,8 @@ def main():
                       help="number of G updates vs D updates")
     parser.add_option("--nz_g", type='int', default=60,
                       help="dimension of z global")
+    parser.add_option("--is_const_gen", type='int', default=0,
+                      help="if 1 then the generator G won't be training")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -50,8 +52,9 @@ def main():
         psgan = InversePSGAN(checkpoint_path, z_reconst_fac=options.z_rec_fac,
                              x_reconst_fac=options.x_rec_fac)
     elif options.inverse == 2:
-        psgan = InversePSGAN2(checkpoint_path, k=options.k,
-                              nz_global=options.nz_g)
+        psgan = InversePSGAN2(
+            checkpoint_path, k=options.k, nz_global=options.nz_g,
+            is_const_gen=options.is_const_gen)
     elif options.inverse == 3:
         psgan = InversePSGAN3(checkpoint_path)
     else:

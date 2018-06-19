@@ -896,11 +896,11 @@ class InversePSGAN2(PSGAN):
             vals["gen_g"] = [p.get_value() for p in self.gen_g]
             vals["gen_b"] = [p.get_value() for p in self.gen_b]
 
+            vals["wave_params"] = [p.get_value() for p in self.wave_params]
+
         vals["gen_z_W"] = [p.get_value() for p in self.gen_z_W]
         vals["gen_z_g"] = [p.get_value() for p in self.gen_z_g]
         vals["gen_z_b"] = [p.get_value() for p in self.gen_z_b]
-
-        vals["wave_params"] = [p.get_value() for p in self.wave_params]
 
         vals["means"] = [p.get_value() for p in self.means]
         vals["inv_stds"] = [p.get_value() for p in self.inv_stds]

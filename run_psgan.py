@@ -33,6 +33,8 @@ def main():
                       help="step for saving model")
     parser.add_option("--k", type='int', default=1,
                       help="number of G updates vs D updates")
+    parser.add_option("--nz_g", type='int', default=60,
+                      help="dimension of z global")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -48,7 +50,8 @@ def main():
         psgan = InversePSGAN(checkpoint_path, z_reconst_fac=options.z_rec_fac,
                              x_reconst_fac=options.x_rec_fac)
     elif options.inverse == 2:
-        psgan = InversePSGAN2(checkpoint_path, k=options.k)
+        psgan = InversePSGAN2(checkpoint_path, k=options.k,
+                              nz_global=options.nz_g)
     elif options.inverse == 3:
         psgan = InversePSGAN3(checkpoint_path)
     else:

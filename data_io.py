@@ -1,7 +1,6 @@
 import os
 import numpy as np
 from PIL import Image
-from PIL.Image import FLIP_LEFT_RIGHT
 
 
 def image_to_tensor(img):
@@ -24,15 +23,12 @@ def tensor_to_image(tensor):
     return np.uint8(img)
 
 
-def get_images(img_files, mirror=False):
+def get_images(img_files):
     imgs = []
     for file in img_files:
         try:
             img = Image.open(file)
             imgs += [image_to_tensor(img)]
-            if mirror:
-                img = img.transpose(FLIP_LEFT_RIGHT)
-                imgs += [image_to_tensor(img)]
         except Exception:
             print "Image ", file, " failed to load!"
     return imgs
@@ -66,15 +62,14 @@ def get_random_patch(imgBig, HW):
     return img
 
 
-def get_texture_iter(texture_path, npx=128, batch_size=64,
-                     mirror=False, inverse=0):
+def get_texture_iter(texture_path, npx=128, batch_size=64, inverse=0):
     HW = npx
     try:
         files = os.listdir(texture_path)
         files = [texture_path + file for file in files]
     except Exception:
         files = [texture_path]
-    imTex = get_images(files, mirror=mirror)
+    imTex = get_images(files)
 
     while True:
         data = np.zeros((batch_size, 3, npx, npx))

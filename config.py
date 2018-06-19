@@ -1,7 +1,4 @@
-import os
-import logging
 from data_io import get_texture_iter
-import utils
 
 
 def zx_to_npx(zx, depth):
@@ -19,13 +16,13 @@ class Config(object):
     l2_fac = 1e-8  # L2 weight regularization factor
     k = 1  # number of G updates vs D updates
 
-    def __init__(self, z_reconst_fac=0.0, x_reconst_fac=0.0, k=1):
+    def __init__(self, z_reconst_fac=0.0, x_reconst_fac=0.0, k=1, nz_global=60):
         self.k = k
         self.z_reconst_fac = z_reconst_fac
         self.x_reconst_fac = x_reconst_fac
 
         self.nz_local = 30    
-        self.nz_global = 60
+        self.nz_global = nz_global
         self.nz_periodic = 3
         self.nz_periodic_MLPnodes = 50
         self.nz = self.nz_local+self.nz_global+self.nz_periodic*2
@@ -59,5 +56,5 @@ class Config(object):
         ## gives back the correct data iterator given class variables --
     ## this way we avoid the python restriction not to pickle iterator objects
     def data_iter(self, texture_path, batch_size, inverse=0):
-        return get_texture_iter(texture_path, npx=self.npx, mirror=False,
+        return get_texture_iter(texture_path, npx=self.npx,
                                 batch_size=batch_size, inverse=inverse)

@@ -44,8 +44,8 @@ def apply_random_flip(img):
     img = img.transpose((1, 2, 0))
     if np.random.randint(2):
         img = np.fliplr(img)
-    if np.random.randint(2):
-        img = np.flipud(img)
+    # if np.random.randint(2):
+    #     img = np.flipud(img)
     img = img.transpose((2, 0, 1))
     return img
 
@@ -57,7 +57,7 @@ def get_random_patch(imgBig, HW):
         img = imgBig[:, h:h + HW, w:w + HW]
     else:
         img = imgBig
-    img = apply_random_rotate(img)
+    #img = apply_random_rotate(img)
     img = apply_random_flip(img)
     return img
 

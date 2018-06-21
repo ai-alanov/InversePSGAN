@@ -851,12 +851,6 @@ class InversePSGAN2(PSGAN):
         l2_d = regularize_network_params(self.d_real,
                                          lasagne.regularization.l2)
 
-        # self.obj_d = - self.bin_rand * T.mean(T.log(1 - d_fake_out)) \
-        #              - (1 - self.bin_rand) * T.mean(T.log(1 - d_fake_out2)) \
-        #              - T.mean(T.log(d_real_out)) + self.config.l2_fac * l2_d
-        # self.obj_g = - self.bin_rand * T.mean(T.log(d_fake_out)) \
-        #              - (1 - self.bin_rand) * T.mean(T.log(d_fake_out2)) \
-        #              + self.config.l2_fac * l2_g
         self.obj_d = - T.mean(T.log(1 - d_fake_out)) \
                      - T.mean(T.log(d_real_out)) + self.config.l2_fac * l2_d
         self.obj_g = - T.mean(T.log(d_fake_out)) + self.config.l2_fac * l2_g

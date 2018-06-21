@@ -36,7 +36,8 @@ def train(model, config, logger, options, model_dir, samples_dir,
                 elif inverse == 1:
                     Gcost.append(model.train_g(X_samples, Z_samples, Z_global))
                 elif inverse >= 2:
-                    Gcost.append(model.train_g(X_samples[0], Z_samples))
+                    Gcost.append(model.train_g(X_samples[0], Z_samples,
+                                               np.random.randint(2)))
             else:
                 if inverse == 0:
                     Dcost.append(model.train_d(X_samples, Z_samples))
@@ -44,7 +45,7 @@ def train(model, config, logger, options, model_dir, samples_dir,
                     Dcost.append(model.train_d(X_samples, Z_samples, Z_global))
                 elif inverse >= 2:
                     Dcost.append(model.train_d(X_samples[0], X_samples[1],
-                                               Z_samples))
+                                               Z_samples, np.random.randint(2)))
         msg = "Gcost = {}, Dcost = {}"
         logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
 

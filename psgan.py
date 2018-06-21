@@ -799,6 +799,7 @@ class InversePSGAN2(PSGAN):
     def _build_network(self):
         self.X2 = lasagne.layers.InputLayer((None, self.config.nc,
                                              self.config.npx, self.config.npx))
+        self.bin_rand = T.scalar('bin_rand', dtype='int32')
         self.Z_loc_and_period = lasagne.layers.SliceLayer(
             self.Z, indices=slice(self.config.nz_global, None), axis=1)
 
@@ -819,7 +820,10 @@ class InversePSGAN2(PSGAN):
 
         self.gen_X_double = lasagne.layers.ConcatLayer(
             [self.X, self.X_reconst], axis=3)
+        self.gen_X_double2 = lasagne.layers.ConcatLayer(
+            [self.X_reconst, self.X], axis=3)
         self.d_fake = self._spatial_discriminator(self.gen_X_double)
+        self.d_fake2 = self._spatial_discriminator(self.gen_X_double2)
 
     def _build_obj(self):
         self.gen_Z_out = get_output(self.gen_Z)
@@ -831,6 +835,7 @@ class InversePSGAN2(PSGAN):
 
         d_real_out = get_output(self.d_real)
         d_fake_out = get_output(self.d_fake)
+        d_fake_out2 = get_output(self.d_fake2)
 
         if self.is_const_gen:
             params_g = get_all_params(self.gen_Z, trainable=True)
@@ -846,9 +851,12 @@ class InversePSGAN2(PSGAN):
         l2_d = regularize_network_params(self.d_real,
                                          lasagne.regularization.l2)
 
-        self.obj_d = -T.mean(T.log(1 - d_fake_out)) \
+        self.obj_d = - self.bin_rand * T.mean(T.log(1 - d_fake_out)) \
+                     - (1 - self.bin_rand) * T.mean(T.log(1 - d_fake_out2)) \
                      - T.mean(T.log(d_real_out)) + self.config.l2_fac * l2_d
-        self.obj_g = -T.mean(T.log(d_fake_out)) + self.config.l2_fac * l2_g
+        self.obj_g = - self.bin_rand * T.mean(T.log(d_fake_out)) \
+                     - (1 - self.bin_rand) * T.mean(T.log(d_fake_out2)) \
+                     + self.config.l2_fac * l2_g
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)
         self.updates_g = lasagne.updates.adam(
@@ -859,11 +867,12 @@ class InversePSGAN2(PSGAN):
                                      stream=sys.stdout)
         logger.info("Compiling the network...")
         self.train_d = theano.function(
-            [self.X.input_var, self.X2.input_var, self.Z.input_var],
+            [self.X.input_var, self.X2.input_var,
+             self.Z.input_var, self.bin_rand],
             self.obj_d, updates=self.updates_d, allow_input_downcast=True)
         logger.info("Discriminator done.")
         self.train_g = theano.function(
-            [self.X.input_var, self.Z.input_var],
+            [self.X.input_var, self.Z.input_var, self.bin_rand],
             self.obj_g, updates=self.updates_g, allow_input_downcast=True)
         logger.info("Generator done.")
         self.generate = theano.function(

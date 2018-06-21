@@ -871,11 +871,11 @@ class InversePSGAN2(PSGAN):
         logger.info("Compiling the network...")
         self.train_d = theano.function(
             [self.X.input_var, self.X2.input_var,
-             self.Z.input_var, self.bin_rand],
+             self.Z.input_var],
             self.obj_d, updates=self.updates_d, allow_input_downcast=True)
         logger.info("Discriminator done.")
         self.train_g = theano.function(
-            [self.X.input_var, self.Z.input_var, self.bin_rand],
+            [self.X.input_var, self.Z.input_var],
             self.obj_g, updates=self.updates_g, allow_input_downcast=True)
         logger.info("Generator done.")
         self.generate = theano.function(

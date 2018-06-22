@@ -757,9 +757,8 @@ class InversePSGAN2(PSGAN):
                       self.gen_z_W[-1], None, nonlinearity=tanh, stride=1)
         output = lasagne.layers.Pool2DLayer(output, self.config.zx,
                                             mode='average_inc_pad')
-        if not hasattr(self, 'means_z'):
-            self.means_z = means_z
-            self.inv_stds_z = inv_stds_z
+        self.means_z = means_z
+        self.inv_stds_z = inv_stds_z
 
         return output
 

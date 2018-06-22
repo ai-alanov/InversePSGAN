@@ -79,6 +79,7 @@ def sample(model, config, samples_dir, texture_path,
                                               global_noise=global_noise,
                                               per_each=True)
         gen_samples = model.generate(z_samples)
+        gen_samples = model.generate_det(z_samples)
         all_samples = [[img, list(gen_samples[n_z_samples*i:n_z_samples*(i+1)])]
                        for i, img in enumerate(imgs)]
         all_samples = [np.concatenate(np.concatenate(samples, axis=0), axis=2)

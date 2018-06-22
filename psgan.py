@@ -221,11 +221,10 @@ class PSGAN(object):
                 gamma=self.gen_g[l], beta=self.gen_b[l], alpha=1.0))
             means += [layers[-1].input_layer.mean]
             inv_stds += [layers[-1].input_layer.inv_std]
-        output  = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
-                        self.gen_W[-1], nonlinearity=tanh)
-        if not hasattr(self, 'means'):
-            self.means = means
-            self.inv_stds = inv_stds
+        output = tconv(layers[-1], self.gen_fn[-1], self.gen_ks[-1],
+                       self.gen_W[-1], nonlinearity=tanh)
+        self.means = means
+        self.inv_stds = inv_stds
 
         return output
 

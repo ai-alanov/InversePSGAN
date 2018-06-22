@@ -16,12 +16,13 @@ class Config(object):
     l2_fac = 1e-8  # L2 weight regularization factor
     k = 1  # number of G updates vs D updates
 
-    def __init__(self, z_reconst_fac=0.0, x_reconst_fac=0.0, k=1, nz_global=60):
+    def __init__(self, z_reconst_fac=0.0, x_reconst_fac=0.0, k=1,
+                 nz_global=60, nz_local=30):
         self.k = k
         self.z_reconst_fac = z_reconst_fac
         self.x_reconst_fac = x_reconst_fac
 
-        self.nz_local = 30    
+        self.nz_local = nz_local
         self.nz_global = nz_global
         self.nz_periodic = 3
         self.nz_periodic_MLPnodes = 50

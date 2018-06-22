@@ -4,8 +4,22 @@ from datetime import datetime
 import csv
 import logging
 import numpy as np
+import pickle
+import warnings
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from data_io import save_tensor
+
+sns.set_style('whitegrid')
+sns.set_context(
+    'paper',
+    font_scale=2.0,
+    rc={'lines.linewidth': 2, 'lines.markersize': 10, 'figsize': (5, 4.8)})
+
+warnings.filterwarnings('ignore', module='matplotlib')
 
 
 def makedirs(path):
@@ -126,6 +140,34 @@ def save_samples(save_dir, samples, names, epoch=None):
         sample_file = '{}.jpg'.format(name)
         sample_file = os.path.join(save_dir, sample_file)
         save_tensor(sample, sample_file)
+
+
+def save_plots(save_dir, losses, epoch, n_iters):
+    save_dir = os.path.join(save_dir, 'epoch_{:04d}'.format(epoch))
+    makedirs(save_dir)
+
+    with open(os.path.join(save_dir, 'losses.pkl'), 'w') as f:
+        pickle.dump(losses, f)
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(losses['G_iter'][-n_iters:], label='G loss')
+    plt.plot(losses['D_iter'][-n_iters:], label='D loss')
+    plt.title('D and G loss per iteration')
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.legend(loc='best')
+    plt.tight_layout()
+    plt.savefig('D_G_loss_per_iteration.pdf')
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(losses['G_epoch'], label='G loss')
+    plt.plot(losses['D_epoch'], label='D loss')
+    plt.title('D and G loss per epoch')
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.legend(loc='best')
+    plt.tight_layout()
+    plt.savefig('D_G_loss_per_epoch.pdf')
 
 
 def sample_z(config, batch_size, zx, zx_quilt, global_noise):

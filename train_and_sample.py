@@ -2,6 +2,7 @@ import numpy as np
 import os
 import sys
 from tqdm import tqdm
+from collections import defaultdict
 
 import utils
 from data_io import get_images, get_random_patch
@@ -13,10 +14,9 @@ def train(model, config, logger, options, model_dir, samples_dir,
           inverse=False, save_step=10):
     utils.makedirs(samples_dir)
 
+    losses = defaultdict(list)
     for epoch in tqdm(range(options.n_epochs), file=sys.stdout):
         logger.info("Epoch {}".format(epoch))
-        Gcost = []
-        Dcost = []
 
         samples_generator = config.data_iter(options.data, options.b_size,
                                              inverse=inverse)
@@ -32,21 +32,26 @@ def train(model, config, logger, options, model_dir, samples_dir,
             X_samples = next(samples_generator)
             if it % (config.k + 1) != 0:
                 if inverse == 0:
-                    Gcost.append(model.train_g(Z_samples))
+                    losses['G_iter'].append(model.train_g(Z_samples))
                 elif inverse == 1:
-                    Gcost.append(model.train_g(X_samples, Z_samples, Z_global))
+                    losses['G_iter'].append(model.train_g(X_samples, Z_samples,
+                                                          Z_global))
                 elif inverse >= 2:
-                    Gcost.append(model.train_g(X_samples[0], Z_samples))
+                    losses['G_iter'].append(model.train_g(X_samples[0],
+                                                          Z_samples))
             else:
                 if inverse == 0:
-                    Dcost.append(model.train_d(X_samples, Z_samples))
+                    losses['D_iter'].append(model.train_d(X_samples, Z_samples))
                 elif inverse == 1:
-                    Dcost.append(model.train_d(X_samples, Z_samples, Z_global))
+                    losses['D_iter'].append(model.train_d(X_samples, Z_samples,
+                                                          Z_global))
                 elif inverse >= 2:
-                    Dcost.append(model.train_d(X_samples[0], X_samples[1],
-                                               Z_samples))
-        msg = "Gcost = {}, Dcost = {}"
-        logger.info(msg.format(np.mean(Gcost), np.mean(Dcost)))
+                    losses['D_iter'].append(model.train_d(
+                        X_samples[0], X_samples[1], Z_samples))
+        msg = "Gloss = {}, Dloss = {}"
+        losses['G_epoch'].append(np.mean(losses['G_iter'][-options.n_iters:]))
+        losses['D_epoch'].append(np.mean(losses['D_iter'][-options.n_iters:]))
+        logger.info(msg.format(losses['G_epoch'][-1], losses['D_epoch'][-1]))
 
         X = next(samples_generator)
         real_samples, gen_samples, large_sample = utils.sample_after_iteration(
@@ -54,6 +59,7 @@ def train(model, config, logger, options, model_dir, samples_dir,
         utils.save_samples(
             samples_dir, [real_samples, gen_samples, large_sample],
             ['real', 'gen', 'large'], epoch=epoch)
+        utils.save_plots(samples_dir, losses, epoch, options.n_iters)
 
         if (epoch+1) % save_step == 0:
             model_file = 'epoch_{:04d}.model'.format(epoch)

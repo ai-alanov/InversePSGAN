@@ -740,6 +740,22 @@ class InversePSGAN2(PSGAN):
             self.gen_z_g.append(sharedX(self.g_init.sample(
                 (self.gen_z_fn[l + 1]))))
 
+        self.dis_W = []
+        self.dis_b = []
+        self.dis_g = []
+
+        self.dis_W.append(sharedX(self.w_init.sample(
+            (self.dis_fn[0], self.config.nc,
+             self.dis_ks[0][0], self.dis_ks[0][1]))))
+        self.dis_depth -= 1
+        self.dis_fn = self.dis_fn[:-2] + [self.dis_fn[-1]]
+        for l in range(self.dis_depth - 1):
+            self.dis_W.append(sharedX(self.w_init.sample(
+                (self.dis_fn[l + 1], self.dis_fn[l],
+                 self.dis_ks[l + 1][0], self.dis_ks[l + 1][1]))))
+            self.dis_b.append(sharedX(self.b_init.sample((self.dis_fn[l + 1]))))
+            self.dis_g.append(sharedX(self.g_init.sample((self.dis_fn[l + 1]))))
+
     def _spatial_generator_Z(self, inlayer):
         layers = [inlayer]
         layers.append(conv(layers[-1], self.gen_z_fn[0], self.gen_z_ks[0],

@@ -157,7 +157,7 @@ def save_plots(save_dir, losses, epoch, n_iters):
     plt.ylabel('loss')
     plt.legend(loc='best')
     plt.tight_layout()
-    plt.savefig('D_G_loss_per_iteration.pdf')
+    plt.savefig(os.path.join(save_dir, 'D_G_loss_per_iteration.pdf'))
 
     plt.figure(figsize=(12, 8))
     plt.plot(losses['G_epoch'], label='G loss')
@@ -167,7 +167,7 @@ def save_plots(save_dir, losses, epoch, n_iters):
     plt.ylabel('loss')
     plt.legend(loc='best')
     plt.tight_layout()
-    plt.savefig('D_G_loss_per_epoch.pdf')
+    plt.savefig(os.path.join(save_dir, 'D_G_loss_per_epoch.pdf'))
 
 
 def sample_z(config, batch_size, zx, zx_quilt, global_noise):

@@ -11,7 +11,7 @@ np.random.seed(1234)
 
 
 def train(model, config, logger, options, model_dir, samples_dir,
-          inverse=False, save_step=10):
+          inverse=False, save_step=10, n_samles=20):
     utils.makedirs(samples_dir)
 
     losses = defaultdict(list)
@@ -19,7 +19,7 @@ def train(model, config, logger, options, model_dir, samples_dir,
         logger.info("Epoch {}".format(epoch))
 
         samples_generator = config.data_iter(options.data, options.b_size,
-                                             inverse=inverse)
+                                             inverse=inverse, n_samles=n_samles)
 
         for it in tqdm(range(options.n_iters), file=sys.stdout):
             Z_global = None

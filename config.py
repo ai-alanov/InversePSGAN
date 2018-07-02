@@ -56,6 +56,7 @@ class Config(object):
 
         ## gives back the correct data iterator given class variables --
     ## this way we avoid the python restriction not to pickle iterator objects
-    def data_iter(self, texture_path, batch_size, inverse=0):
-        return get_texture_iter(texture_path, npx=self.npx,
-                                batch_size=batch_size, inverse=inverse)
+    def data_iter(self, texture_path, batch_size, inverse=0, n_samples=20):
+        return get_texture_iter(
+            texture_path, npx=self.npx, batch_size=batch_size,
+            inverse=inverse, n_samples=n_samples)

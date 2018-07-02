@@ -39,6 +39,8 @@ def main():
                       help="dimension of z local")
     parser.add_option("--is_const_gen", type='int', default=0,
                       help="if 1 then the generator G won't be training")
+    parser.add_option("--n_samples", type='int', default=20,
+                      help="number of textures for training")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -66,12 +68,13 @@ def main():
         model_dir = utils.create_model_folder('models', vars(options))
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
 
-        train(psgan, psgan.config, logger, options, model_dir,
-              samples_dir, inverse=options.inverse, save_step=options.save_step)
+        train(psgan, psgan.config, logger, options, model_dir, samples_dir,
+              inverse=options.inverse, save_step=options.save_step,
+              n_samles=options.n_samples)
     elif options.mode == 'sample':
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
-        sample(psgan, psgan.config, samples_dir,
-               options.data, inverse=options.inverse)
+        sample(psgan, psgan.config, samples_dir, options.data,
+               inverse=options.inverse, n_samples=options.n_samples)
 
 
 if __name__ == '__main__':

@@ -70,7 +70,7 @@ def main():
 
         train(psgan, psgan.config, logger, options, model_dir, samples_dir,
               inverse=options.inverse, save_step=options.save_step,
-              n_samles=options.n_samples)
+              n_samples=options.n_samples)
     elif options.mode == 'sample':
         samples_dir = os.path.join(os.path.dirname(log_file), 'samples')
         sample(psgan, psgan.config, samples_dir, options.data,

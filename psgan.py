@@ -694,9 +694,10 @@ class InversePSGAN(PSGAN):
 
 class InversePSGAN2(PSGAN):
 
-    def __init__(self, name=None, compile=True, is_const_gen=False, **kwargs):
+    def __init__(self, name=None, compile=True, is_const_gen=False, dis_layers=5, **kwargs):
         super(InversePSGAN2, self).__init__(name, **kwargs)
         self.is_const_gen = is_const_gen
+        self.dis_layers = dis_layers
 
         self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
 
@@ -747,8 +748,8 @@ class InversePSGAN2(PSGAN):
         self.dis_W.append(sharedX(self.w_init.sample(
             (self.dis_fn[0], self.config.nc,
              self.dis_ks[0][0], self.dis_ks[0][1]))))
-        self.dis_depth -= 1
-        self.dis_fn = self.dis_fn[:-2] + [self.dis_fn[-1]]
+        self.dis_depth = self.dis_layers
+        self.dis_fn = self.dis_fn[:self.dis_layers-1] + [self.dis_fn[-1]]
         for l in range(self.dis_depth - 1):
             self.dis_W.append(sharedX(self.w_init.sample(
                 (self.dis_fn[l + 1], self.dis_fn[l],

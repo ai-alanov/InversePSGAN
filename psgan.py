@@ -694,10 +694,12 @@ class InversePSGAN(PSGAN):
 
 class InversePSGAN2(PSGAN):
 
-    def __init__(self, name=None, compile=True, is_const_gen=False, dis_layers=5, **kwargs):
+    def __init__(self, name=None, compile=True, is_const_gen=False,
+                 dis_layers=5, cl_w=0.5, **kwargs):
         super(InversePSGAN2, self).__init__(name, **kwargs)
         self.is_const_gen = is_const_gen
         self.dis_layers = dis_layers
+        self.cl_w = cl_w
 
         self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
 
@@ -866,8 +868,9 @@ class InversePSGAN2(PSGAN):
         l2_d = regularize_network_params(self.d_real,
                                          lasagne.regularization.l2)
 
-        self.obj_d = - T.mean(T.log(1 - d_fake_out)) \
-                     - T.mean(T.log(d_real_out)) + self.config.l2_fac * l2_d
+        self.obj_d = - 2 * (1-self.cl_w) * T.mean(T.log(1 - d_fake_out)) \
+                     - 2 * self.cl_w * T.mean(T.log(d_real_out)) \
+                     + self.config.l2_fac * l2_d
         self.obj_g = - T.mean(T.log(d_fake_out)) + self.config.l2_fac * l2_g
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)

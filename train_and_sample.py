@@ -98,7 +98,7 @@ def sample(model, config, samples_dir, texture_path,
         global_noise = np.random.uniform(-1., 1., (1, config.nz_global, 1, 1))
         z_samples = utils.sample_noise_tensor(config, n_z_samples, config.zx,
                                               global_noise=global_noise)
-        gen_samples = model.generate(z_samples)
+        gen_samples = model.generate_det(z_samples)
         gen_samples = np.concatenate(gen_samples, axis=2)
         all_samples.append(gen_samples)
     all_samples = [np.concatenate(all_samples, axis=1)]

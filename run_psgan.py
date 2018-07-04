@@ -41,6 +41,10 @@ def main():
                       help="if 1 then the generator G won't be training")
     parser.add_option("--n_samples", type='int', default=20,
                       help="number of textures for training")
+    parser.add_option("--d_layers", type='int', default=5,
+                      help="number of discriminator layers")
+    parser.add_option("--cl_w", type='float', default=0.5,
+                      help="real class weight")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -58,7 +62,8 @@ def main():
     elif options.inverse == 2:
         psgan = InversePSGAN2(
             checkpoint_path, k=options.k, nz_global=options.nz_g,
-            nz_local=options.nz_l, is_const_gen=options.is_const_gen)
+            nz_local=options.nz_l, is_const_gen=options.is_const_gen,
+            dis_layers=options.d_layers, cl_w=options.cl_w)
     elif options.inverse == 3:
         psgan = InversePSGAN3(checkpoint_path)
     else:

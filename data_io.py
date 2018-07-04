@@ -64,7 +64,7 @@ def get_texture_iter(texture_path, npx=128, batch_size=64,
                      inverse=0, n_samples=20):
     HW = npx
     try:
-        files = os.listdir(texture_path)
+        files = sorted(os.listdir(texture_path))
         files = [texture_path + file for file in files][:n_samples]
     except Exception:
         files = [texture_path]

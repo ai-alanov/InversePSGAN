@@ -45,6 +45,8 @@ def main():
                       help="number of discriminator layers")
     parser.add_option("--cl_w", type='float', default=0.5,
                       help="real class weight")
+    parser.add_option("--ex_g_obj", type='int', default=0,
+                       help="if 1 then the generator obj will be extended")
     (options, args) = parser.parse_args()
 
     log_file = utils.create_logging_file('logs', vars(options))
@@ -63,7 +65,8 @@ def main():
         psgan = InversePSGAN2(
             checkpoint_path, k=options.k, nz_global=options.nz_g,
             nz_local=options.nz_l, is_const_gen=options.is_const_gen,
-            dis_layers=options.d_layers, cl_w=options.cl_w)
+            dis_layers=options.d_layers, cl_w=options.cl_w,
+            ex_g_obj=options.ex_g_obj)
     elif options.inverse == 3:
         psgan = InversePSGAN3(checkpoint_path)
     else:

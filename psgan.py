@@ -695,12 +695,14 @@ class InversePSGAN(PSGAN):
 class InversePSGAN2(PSGAN):
 
     def __init__(self, name=None, compile=True, is_const_gen=False,
-                 dis_layers=5, cl_w=0.5, ex_g_obj=False, **kwargs):
+                 dis_layers=5, cl_w=0.5, ex_g_obj=False,
+                 use_entropy=False, **kwargs):
         super(InversePSGAN2, self).__init__(name, **kwargs)
         self.is_const_gen = is_const_gen
         self.dis_layers = dis_layers
         self.cl_w = cl_w
         self.extend_gen_obj = ex_g_obj
+        self.use_entropy = use_entropy
 
         self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
 
@@ -851,6 +853,9 @@ class InversePSGAN2(PSGAN):
         self.X_double_out = get_output(self.X_double)
         self.gen_X_double_out = get_output(self.gen_X_double)
 
+        gen_Z_out_1 = T.reshape(self.gen_Z_out, (1, -1, self.config.nz_global))
+        gen_Z_out_2 = T.reshape(self.gen_Z_out, (-1, 1, self.config.nz_global))
+
         d_real_out = get_output(self.d_real)
         d_fake_out = get_output(self.d_fake)
         # d_fake_out2 = get_output(self.d_fake2)
@@ -872,9 +877,16 @@ class InversePSGAN2(PSGAN):
         self.obj_d = - 2 * (1-self.cl_w) * T.mean(T.log(1 - d_fake_out)) \
                      - 2 * self.cl_w * T.mean(T.log(d_real_out)) \
                      + self.config.l2_fac * l2_d
+
         self.obj_g = - T.mean(T.log(d_fake_out)) + self.config.l2_fac * l2_g
         if self.extend_gen_obj:
             self.obj_g += - T.mean(T.log(1 - d_fake_out))
+        if self.use_entropy:
+            self.entropy = gen_Z_out_1 - gen_Z_out_2
+            self.entropy = T.sum(self.entropy ** 2, -1)
+            self.entropy = T.exp(-self.entropy)
+            self.obj_g += T.mean(self.entropy)
+
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)
         self.updates_g = lasagne.updates.adam(

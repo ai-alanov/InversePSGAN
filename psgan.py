@@ -886,8 +886,8 @@ class InversePSGAN2(PSGAN):
             self.entropy = gen_Z_out_1 - gen_Z_out_2
             self.entropy = T.sum(self.entropy ** 2, -1)
             self.entropy = T.mean(T.exp(-self.entropy))
-            self.obj_g += self.entr_coef * self.entropy
-            self.obj_g = self.entropy
+            # self.obj_g += self.entr_coef * self.entropy
+            self.obj_g = 1e-8 * self.obj_g + self.entropy
 
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)

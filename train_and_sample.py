@@ -60,8 +60,8 @@ def train(model, config, logger, options, model_dir, samples_dir,
                                        [np.min, np.max, np.mean, np.median]]
         losses['G_epoch'].append(np.mean(losses['G_iter'][-options.n_iters:]))
         losses['D_epoch'].append(np.mean(losses['D_iter'][-options.n_iters:]))
-        logger.info(msg.format(losses['G_epoch'][-1], losses['D_epoch'][-1]),
-                    e_min, e_max, e_mean, e_med)
+        logger.info(msg.format(losses['G_epoch'][-1], losses['D_epoch'][-1],
+                    e_min, e_max, e_mean, e_med))
 
         X = next(samples_generator)
         real_samples, gen_samples, large_sample = utils.sample_after_iteration(

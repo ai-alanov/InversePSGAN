@@ -884,8 +884,8 @@ class InversePSGAN2(PSGAN):
         if self.use_entropy:
             self.entropy = gen_Z_out_1 - gen_Z_out_2
             self.entropy = T.sum(self.entropy ** 2, -1)
-            self.entropy = T.exp(-self.entropy)
-            self.obj_g += T.mean(self.entropy)
+            self.entropy = T.mean(T.exp(-self.entropy))
+            self.obj_g += self.entropy
 
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)
@@ -903,7 +903,7 @@ class InversePSGAN2(PSGAN):
         logger.info("Discriminator done.")
         self.train_g = theano.function(
             [self.X.input_var, self.Z.input_var],
-            self.obj_g, updates=self.updates_g, allow_input_downcast=True)
+            [self.obj_g, self.entropy], updates=self.updates_g, allow_input_downcast=True)
         logger.info("Generator done.")
         self.generate = theano.function(
             [self.Z.input_var], self.gen_X_out, allow_input_downcast=True)

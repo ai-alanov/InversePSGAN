@@ -21,6 +21,8 @@ def train(model, config, logger, options, model_dir, samples_dir,
         samples_generator = config.data_iter(
             options.data, options.b_size, inverse=inverse, n_samples=n_samples)
 
+        entropy_epoch = []
+
         for it in tqdm(range(options.n_iters), file=sys.stdout):
             Z_global = None
             if inverse:
@@ -37,8 +39,12 @@ def train(model, config, logger, options, model_dir, samples_dir,
                     losses['G_iter'].append(model.train_g(X_samples, Z_samples,
                                                           Z_global))
                 elif inverse >= 2:
-                    losses['G_iter'].append(model.train_g(X_samples[0],
-                                                          Z_samples))
+                    # losses['G_iter'].append(model.train_g(X_samples[0],
+                    #                                       Z_samples))
+                    G_loss, entropy = model.train_g(X_samples[0], Z_samples)
+                    losses['G_iter'].append(G_loss)
+                    entropy_epoch.append(entropy)
+
             else:
                 if inverse == 0:
                     losses['D_iter'].append(model.train_d(X_samples, Z_samples))
@@ -49,9 +55,13 @@ def train(model, config, logger, options, model_dir, samples_dir,
                     losses['D_iter'].append(model.train_d(
                         X_samples[0], X_samples[1], Z_samples))
         msg = "Gloss = {}, Dloss = {}"
+        msg += "\n e_min = {}, e_max = {}, e_mean = {}, e_med = {}"
+        e_min, e_max, e_mean, e_med = [f(entropy_epoch) for f in
+                                       [np.min, np.max, np.mean, np.median]]
         losses['G_epoch'].append(np.mean(losses['G_iter'][-options.n_iters:]))
         losses['D_epoch'].append(np.mean(losses['D_iter'][-options.n_iters:]))
-        logger.info(msg.format(losses['G_epoch'][-1], losses['D_epoch'][-1]))
+        logger.info(msg.format(losses['G_epoch'][-1], losses['D_epoch'][-1]),
+                    e_min, e_max, e_mean, e_med)
 
         X = next(samples_generator)
         real_samples, gen_samples, large_sample = utils.sample_after_iteration(

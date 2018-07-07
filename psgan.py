@@ -696,13 +696,14 @@ class InversePSGAN2(PSGAN):
 
     def __init__(self, name=None, compile=True, is_const_gen=False,
                  dis_layers=5, cl_w=0.5, ex_g_obj=False,
-                 use_entropy=False, **kwargs):
+                 use_entropy=False, entr_coef=1., **kwargs):
         super(InversePSGAN2, self).__init__(name, **kwargs)
         self.is_const_gen = is_const_gen
         self.dis_layers = dis_layers
         self.cl_w = cl_w
         self.extend_gen_obj = ex_g_obj
         self.use_entropy = use_entropy
+        self.entr_coef = entr_coef
 
         self._setup_gen_z_params(self.config.gen_z_ks, self.config.gen_z_fn)
 
@@ -885,7 +886,7 @@ class InversePSGAN2(PSGAN):
             self.entropy = gen_Z_out_1 - gen_Z_out_2
             self.entropy = T.sum(self.entropy ** 2, -1)
             self.entropy = T.mean(T.exp(-self.entropy))
-            self.obj_g += self.entropy
+            self.obj_g += self.entr_coef * self.entropy
 
         self.updates_d = lasagne.updates.adam(
             self.obj_d, params_d, self.config.lr, self.config.b1)

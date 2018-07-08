@@ -883,7 +883,7 @@ class InversePSGAN2(PSGAN):
         if self.extend_gen_obj:
             self.obj_g += - T.mean(T.log(1 - d_fake_out))
 
-        self.entropy = gen_Z_out_1 - gen_Z_out_2 + 1e-5
+        self.entropy = gen_Z_out_1 - gen_Z_out_2 + 1e-2
         self.entropy = T.sum(self.entropy ** 2, -1)
         self.entropy = T.mean(1. / self.entropy)
         if self.use_entropy:

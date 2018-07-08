@@ -882,10 +882,11 @@ class InversePSGAN2(PSGAN):
         self.obj_g = - T.mean(T.log(d_fake_out)) + self.config.l2_fac * l2_g
         if self.extend_gen_obj:
             self.obj_g += - T.mean(T.log(1 - d_fake_out))
+
+        self.entropy = gen_Z_out_1 - gen_Z_out_2
+        self.entropy = T.sum(self.entropy ** 2, -1)
+        self.entropy = T.mean(T.exp(-self.entropy))
         if self.use_entropy:
-            self.entropy = gen_Z_out_1 - gen_Z_out_2
-            self.entropy = T.sum(self.entropy ** 2, -1)
-            self.entropy = T.mean(T.exp(-self.entropy))
             self.obj_g = self.entr_coef * self.obj_g + self.entropy
 
         self.updates_d = lasagne.updates.adam(

@@ -885,7 +885,7 @@ class InversePSGAN2(PSGAN):
 
         self.entropy = gen_Z_out_1 - gen_Z_out_2 + 1.
         self.entropy = T.sum(self.entropy ** 2, -1)
-        self.entropy = T.sum(T.exp(-self.entropy))
+        self.entropy = T.mean(1. / self.entropy)
         if self.use_entropy:
             self.obj_g = self.entr_coef * self.obj_g + self.entropy
 
